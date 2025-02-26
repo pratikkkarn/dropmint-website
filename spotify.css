@@ -1,0 +1,158 @@
+@import url('https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:ital,wght@0,200..800;1,200..800&family=Hind:wght@300;400;500;600;700&family=Ubuntu+Sans:ital,wght@0,100..800;1,100..800&family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,500;1,700&family=Varela&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:ital,wght@0,200..800;1,200..800&family=Hind:wght@300;400;500;600;700&family=Ubuntu+Sans:ital,wght@0,100..800;1,100..800&family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,500;1,700&display=swap');
+body{
+    background-color: grey;
+}
+
+*{
+    margin: 0;
+    padding: 0;
+}
+
+nav{
+    font-family: 'Ubuntu', sans-serif;
+}
+
+nav ul{
+    display: flex;
+    align-items: center;
+    list-style-type: none;
+    height: 65px;
+    background-color: black;
+    color: white;
+}
+
+nav ul li{
+    padding: 0 12px;
+}
+
+.brand img{
+    width: 45px;
+    padding: 0 8px;
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    font-weight: bolder;
+    font-size: 1.7rem;
+}
+
+html, body {
+    height: 100%;
+    overflow: hidden; /* Hide the scrollbar */
+}
+
+body {
+    overflow: auto; /* Allow scrolling */
+    -ms-overflow-style: none;  /* Hide scrollbar for IE and Edge */
+    scrollbar-width: none;  /* Hide scrollbar for Firefox */
+}
+
+body::-webkit-scrollbar {
+    display: none; /* Hide scrollbar for Chrome, Safari, and Opera */
+}
+
+.container {
+    height: 500px; /* Set your desired height */
+    background-color: black;
+    color: white;
+    font-family: 'Varela Round', sans-serif;
+    display: flex;
+    margin: 25px auto;
+    width: 70%;
+    border-radius: 15px;
+    padding: 25px;
+    background-image: url('kalakar.jpg');
+    background-size: 100% 100%;
+    background-position: center;
+    background-repeat: no-repeat;
+    flex-shrink: 1;
+    box-sizing: border-box; /* Include padding in height */
+    overflow: auto; /* Add scrollbar if content overflows */
+    min-height: unset; /* Remove min-height */
+    scrollbar-width: none; /* Hide scrollbar for Firefox */
+    -ms-overflow-style: none; /* Hide scrollbar for IE and Edge */
+}
+
+.bottom{
+    position: sticky;
+    height: 95px;
+    background-color: black;
+    color: white;
+    bottom: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+.volumeControl {
+    position: absolute;
+    left: 1320px;
+    bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 2px; /* Adds space between emoji and slider */
+    cursor: pointer;
+}
+
+.volumeControl input {
+    width: 100px;
+    height: 3px;
+    margin-top: 3px;
+    cursor: pointer;
+}
+
+.icons{
+    margin-top: 15px;
+}
+
+.icons{
+    cursor: pointer;
+}
+#myProgressBar{
+    width: 80vw;
+    text-align: center;
+    cursor: pointer;
+}
+
+.songItemContainer{
+    margin-top: 35px;
+    padding-bottom: 10px; 
+}
+
+.songItem{
+    height: 50px;
+    display: flex;
+    background-color: rebeccapurple;
+    width: 80%;
+    color: black;
+    margin: 12px 0;
+    justify-content: space-between;
+    align-items: center;
+    border-radius: 35px;
+    
+}
+.songItem img{
+    width: 45px;
+    margin-left: 5px;
+    border-radius: 35px;
+}
+
+.timestamp{
+    margin: 0 25px;
+}
+
+.timestamp i{
+    cursor: pointer;
+}
+.songInfo{
+    font-family: 'Varela Round', sans-serif;
+    position: absolute;
+    left: 10vw;
+}
+.songInfo img{
+    opacity: 0;
+    transition: opacity 0.3s ease-in;
+}
