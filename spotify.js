@@ -206,18 +206,30 @@ volumeIcon.addEventListener('click', () => {
 document.addEventListener('keydown', (e) => {
     if (e.code === 'Space') {
         e.preventDefault();
-        audioElement.paused ? audioElement.play() : audioElement.pause();
-        masterPlay.classList.toggle('fa-play-circle');
-        masterPlay.classList.toggle('fa-pause-circle');
-        gif.style.opacity = audioElement.paused ? "0" : "1";
-        document.getElementById((songIndex + 1).toString())?.classList.toggle('fa-circle-play', audioElement.paused);
-        document.getElementById((songIndex + 1).toString())?.classList.toggle('fa-circle-pause', !audioElement.paused);
+        
+        if (audioElement.paused) {
+            if (songIndex === song.length - 1 && audioElement.currentTime === audioElement.duration) {
+                // If last song has ended, reset and do not play again
+                audioElement.currentTime = 0;
+                updatePlayPause(false);
+            } else {
+                audioElement.play();
+                updatePlayPause(true);
+            }
+        } else {
+            audioElement.pause();
+            updatePlayPause(false);
+        }
     } else if (e.code === 'ArrowRight') {
-        songIndex = (songIndex + 1) % song.length;
-        playSelectedSong();
+        if (songIndex < song.length - 1) {
+            songIndex++;
+            playSelectedSong();
+        }
     } else if (e.code === 'ArrowLeft') {
-        songIndex = (songIndex - 1 + song.length) % song.length;
-        playSelectedSong();
+        if (songIndex > 0) {
+            songIndex--;
+            playSelectedSong();
+        }
     }
 });
 
