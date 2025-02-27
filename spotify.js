@@ -53,6 +53,8 @@ songItems.forEach((element, i) => {
 
 // Handle play/pause click
 masterPlay.addEventListener('click', () => {
+    console.log("Before Click - Paused:", audioElement.paused);
+    
     if (audioElement.paused) {
         audioElement.play();
         updatePlayPause(true);
@@ -60,7 +62,10 @@ masterPlay.addEventListener('click', () => {
         audioElement.pause();
         updatePlayPause(false);
     }
+
+    console.log("After Click - Paused:", audioElement.paused);
 });
+
 
 const updatePlayPause = (isPlaying) => {
     masterPlay.classList.toggle('fa-play-circle', !isPlaying);
