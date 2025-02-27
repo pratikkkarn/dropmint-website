@@ -11,7 +11,7 @@ let songItems = Array.from(document.getElementsByClassName('songItem'));
 let volumeControl = document.getElementById('volumeControl');
 
 let song = [
-    {songName: "Farra", filePath: "song/1.mp3",coverPath:"covers/boy.jpg"},
+    {songName: "Farra", filePath: "song/1.mp3",coverPath:"covers/1.jpg"},
     {songName: "Cielo", filePath: "song/2.mp3",coverPath:"covers/2.jpg"},
     {songName: "Kiev", filePath: "song/3.mp3",coverPath:"covers/3.jpg"},
     {songName: "Different Heaven", filePath: "song/4.mp3",coverPath:"covers/4.jpg"},
