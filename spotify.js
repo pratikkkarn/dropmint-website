@@ -220,3 +220,13 @@ document.addEventListener('keydown', (e) => {
         playSelectedSong();
     }
 });
+
+audioElement.addEventListener('ended', () => {
+    if (songIndex === song.length - 1) {
+        audioElement.pause();
+        updatePlayPause(false);
+    } else {
+        songIndex++;
+        playSelectedSong();
+    }
+});
