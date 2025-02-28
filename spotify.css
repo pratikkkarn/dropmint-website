@@ -118,9 +118,14 @@ body::-webkit-scrollbar {
     cursor: pointer;
 }
 
-.songItemContainer{
-    margin-top: 35px;
-    padding-bottom: 10px; 
+.songItemContainer {
+    overflow-y: auto;
+    max-height: 450px;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+.songItemContainer::-webkit-scrollbar {
+    display: none;
 }
 
 .songItem{
