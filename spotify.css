@@ -156,7 +156,7 @@ body::-webkit-scrollbar {
 .songInfo{
     font-family: 'Varela Round', sans-serif;
     position: absolute;
-    left: 1vw;
+    left: 10vw;
 }
 .songInfo img{
     opacity: 0;
@@ -201,5 +201,32 @@ body::-webkit-scrollbar {
     }
     .timestamp {
         margin: 5px 0;
+    }
+}
+
+.songInfo {
+    left: 1vw;
+    bottom: 3vh;
+    position: absolute;
+}
+
+@media (max-width: 1024px) {
+    .songInfo {
+        left: 1vw;
+        bottom: 3vh;
+    }
+}
+
+@media (max-width: 768px) {
+    .songInfo {
+        left: 1vw;
+        bottom: 3vh;
+    }
+}
+
+@media (max-width: 480px) {
+    .songInfo {
+        left: 1vw;
+        bottom: 3vh;
     }
 }
