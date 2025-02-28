@@ -1,4 +1,4 @@
-console.log("Welcome to Spotify")
+console.log("Welcome to Mint Music")
 
 // Initial the variables
 let songIndex = 0;
