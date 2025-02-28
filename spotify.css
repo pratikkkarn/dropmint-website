@@ -204,29 +204,23 @@ body::-webkit-scrollbar {
     }
 }
 
-.songInfo {
-    left: 1vw;
-    bottom: 3vh;
-    position: absolute;
-}
-
 @media (max-width: 1024px) {
     .songInfo {
-        left: 1vw;
+        left: 2vw;
         bottom: 3vh;
     }
 }
 
 @media (max-width: 768px) {
     .songInfo {
-        left: 1vw;
+        left: 2vw;
         bottom: 3vh;
     }
 }
 
 @media (max-width: 480px) {
     .songInfo {
-        left: 1vw;
+        left: 2vw;
         bottom: 3vh;
     }
 }
