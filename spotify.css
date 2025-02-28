@@ -156,7 +156,7 @@ body::-webkit-scrollbar {
 .songInfo{
     font-family: 'Varela Round', sans-serif;
     position: absolute;
-    left: 4vw;
+    left: 1vw;
 }
 .songInfo img{
     opacity: 0;
