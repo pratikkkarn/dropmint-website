@@ -162,3 +162,44 @@ body::-webkit-scrollbar {
     opacity: 0;
     transition: opacity 0.3s ease-in;
 }
+
+@media (max-width: 768px) {
+    .brand {
+        font-size: 1.8rem;
+    }
+    .container {
+        width: 95%;
+        height: auto;
+        flex-direction: column;
+    }
+    .songItem {
+        width: 35%;
+        flex-direction: column;
+        text-align: center;
+    }
+    .bottom {
+        height: 88px;
+    }
+    #myProgressBar {
+        width: 90vw;
+    }
+}
+
+@media (max-width: 480px) {
+    .brand img {
+        width: 50px;
+    }
+    .brand {
+        font-size: 1.5rem;
+    }
+    .container {
+        padding: 10px;
+    }
+    .songItem {
+        height: auto;
+        padding: 10px;
+    }
+    .timestamp {
+        margin: 5px 0;
+    }
+}
