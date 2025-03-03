@@ -163,19 +163,54 @@ body::-webkit-scrollbar {
     transition: opacity 0.3s ease-in;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
+    .container {
+        width: 90%;
+        height: auto;
+        padding: 15px;
+    }
+    .songItem {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 95.7%;
+        padding: 10px;
+        height: 80%;
+    }
     .brand {
-        font-size: 1.8rem;
+        display: flex;
+        align-items: center;
+    }
+    .songName {
+        flex-grow: 1;
+        text-align: center;
+        font-size: 1.2rem;
+    }
+    .songControls {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+}
+
+@media (max-width: 768px) {
+    .brand img {
+        width: 45px;
+    }
+    .brand {
+        font-size: 1.5rem;
     }
     .container {
         width: 95%;
-        height: auto;
+        height: 73.1%;
         flex-direction: column;
     }
     .songItem {
-        width: 35%;
-        flex-direction: column;
+        flex-direction: row;
         text-align: center;
+    }
+    .songName {
+        font-size: 1.2rem;
     }
     .bottom {
         height: 88px;
@@ -187,40 +222,21 @@ body::-webkit-scrollbar {
 
 @media (max-width: 480px) {
     .brand img {
-        width: 50px;
-    }
-    .brand {
-        font-size: 1.5rem;
+        width: 40px;
     }
     .container {
         padding: 10px;
     }
     .songItem {
-        height: auto;
-        padding: 10px;
+        padding: 8px;
+    }
+    .songName {
+        font-size: 1rem;
+    }
+    .songControls {
+        gap: 5px;
     }
     .timestamp {
         margin: 5px 0;
-    }
-}
-
-@media (max-width: 1024px) {
-    .songInfo {
-        left: 2vw;
-        bottom: 3vh;
-    }
-}
-
-@media (max-width: 768px) {
-    .songInfo {
-        left: 2vw;
-        bottom: 3vh;
-    }
-}
-
-@media (max-width: 480px) {
-    .songInfo {
-        left: 2vw;
-        bottom: 3vh;
     }
 }
