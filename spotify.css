@@ -173,9 +173,9 @@ body::-webkit-scrollbar {
         width: 100%;
     }
     .volumeControl {
-        left: auto;
+        left: 2px;
         right: 10px;
-        bottom: 50px;
+        bottom: 605px;
     }
 }
 
