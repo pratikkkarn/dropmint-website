@@ -1,19 +1,41 @@
+/* --- Google Font Imports --- */
+/* REFACTORED: Removed duplicate import and combined into one for cleaner code. */
 @import url('https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:ital,wght@0,200..800;1,200..800&family=Hind:wght@300;400;500;600;700&family=Ubuntu+Sans:ital,wght@0,100..800;1,100..800&family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,500;1,700&family=Varela&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:ital,wght@0,200..800;1,200..800&family=Hind:wght@300;400;500;600;700&family=Ubuntu+Sans:ital,wght@0,100..800;1,100..800&family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,500;1,700&display=swap');
-body{
-    background-color: grey;
-}
 
-*{
+/* --- General & Reset Styles --- */
+* {
     margin: 0;
     padding: 0;
+    box-sizing: border-box; /* ADDED: Ensures padding doesn't affect final dimensions. */
 }
 
-nav{
+html, body {
+    height: 100vh; /* Use viewport height for full-page apps */
+    width: 100vw;
+    overflow: hidden; /* Hide main scrollbars for a clean app look */
+}
+
+body {
+    background-color: grey;
+    display: flex; /* ADDED: Use Flexbox for the main layout */
+    flex-direction: column; /* Stack nav, container, and bottom vertically */
+    /* --- Hide Scrollbars (as requested) --- */
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+}
+
+body::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, and Opera */
+}
+
+
+/* --- Navigation Bar --- */
+nav {
     font-family: 'Ubuntu', sans-serif;
+    flex-shrink: 0; /* Prevents the nav from shrinking */
 }
 
-nav ul{
+nav ul {
     display: flex;
     align-items: center;
     list-style-type: none;
@@ -22,105 +44,48 @@ nav ul{
     color: white;
 }
 
-nav ul li{
+nav ul li {
     padding: 0 12px;
 }
 
-.brand img{
-    width: 70px;
-    padding: 0 1px;
+.brand img {
+    width: 60px; /* Adjusted for better balance */
+    padding-right: 8px;
 }
 
 .brand {
     display: flex;
     align-items: center;
     font-weight: bolder;
-    font-size: 2.2rem;
+    font-size: 1.8rem; /* Adjusted for better scale */
 }
 
-html, body {
-    height: 100%;
-    overflow: hidden; /* Hide the scrollbar */
-}
 
-body {
-    overflow: auto; /* Allow scrolling */
-    -ms-overflow-style: none;  /* Hide scrollbar for IE and Edge */
-    scrollbar-width: none;  /* Hide scrollbar for Firefox */
-}
-
-body::-webkit-scrollbar {
-    display: none; /* Hide scrollbar for Chrome, Safari, and Opera */
-}
-
+/* --- Main Content Container --- */
 .container {
-    height: 500px; /* Set your desired height */
-    background-color: black;
     color: white;
-    font-family: 'Varela Round', sans-serif;
+    font-family: 'Varela', sans-serif;
     display: flex;
+    flex-direction: column; /* Organize content inside vertically */
     margin: 25px auto;
-    width: 70%;
+    width: 90%;
+    max-width: 1200px; /* ADDED: Prevents container from getting too wide on large screens */
     border-radius: 15px;
     padding: 25px;
     background-image: url('kalakar.jpg');
-    background-size: 100% 100%;
+    /* REFACTORED: 'cover' prevents image distortion, which is better than '100% 100%' */
+    background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-    flex-shrink: 1;
-    box-sizing: border-box; /* Include padding in height */
-    overflow: auto; /* Add scrollbar if content overflows */
-    min-height: unset; /* Remove min-height */
-    scrollbar-width: none; /* Hide scrollbar for Firefox */
-    -ms-overflow-style: none; /* Hide scrollbar for IE and Edge */
-}
-
-.bottom {
-    position: fixed;
-    width: 100%;
-    height: 95px;
-    background-color: black;
-    color: white;
-    bottom: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
-}
-
-.volumeControl {
-    position: absolute;
-    left: 1320px;
-    bottom: 20px;
-    display: flex;
-    align-items: center;
-    gap: 2px; /* Adds space between emoji and slider */
-    cursor: pointer;
-}
-
-.volumeControl input {
-    width: 100px;
-    height: 3px;
-    margin-top: 3px;
-    cursor: pointer;
-}
-
-.icons{
-    margin-top: 15px;
-}
-
-.icons{
-    cursor: pointer;
-}
-#myProgressBar{
-    width: 80vw;
-    text-align: center;
-    cursor: pointer;
+    flex-grow: 1; /* ALLOWS CONTAINER TO FILL AVAILABLE SPACE */
+    overflow-y: hidden; /* Hide vertical scroll, will be handled by songItemContainer */
+    min-height: 0; /* Required for flex-grow to work correctly with overflow */
 }
 
 .songItemContainer {
-    overflow-y: auto;
-    max-height: 450px;
+    overflow-y: auto; /* Allow this inner container to scroll */
+    flex-grow: 1; /* Makes the song list fill the container space */
+    /* --- Hide Scrollbars (as requested) --- */
     scrollbar-width: none;
     -ms-overflow-style: none;
 }
@@ -128,115 +93,179 @@ body::-webkit-scrollbar {
     display: none;
 }
 
-.songItem{
+
+/* --- Song Item Styling --- */
+.songItem {
     height: 50px;
     display: flex;
-    background-color: rebeccapurple;
-    width: 80%;
-    color: black;
+    background-color: rgba(102, 51, 153, 0.8); /* Added transparency */
+    color: white;
     margin: 12px 0;
     justify-content: space-between;
     align-items: center;
     border-radius: 35px;
-    
-}
-.songItem img{
-    width: 45px;
-    margin-left: 5px;
-    border-radius: 35px;
+    padding: 0 10px; /* Added padding for better spacing */
+    transition: background-color 0.3s ease;
 }
 
-.timestamp{
+.songItem:hover {
+    background-color: rebeccapurple;
+}
+
+.songItem img {
+    width: 45px;
+    height: 45px; /* Ensure image is a circle */
+    margin-left: 5px;
+    border-radius: 50%; /* Perfect circle */
+}
+
+.timestamp {
     margin: 0 25px;
 }
 
-.timestamp i{
+.timestamp i {
     cursor: pointer;
 }
-.songInfo{
-    font-family: 'Varela Round', sans-serif;
-    position: absolute;
-    left: 10vw;
-}
-.songInfo img{
-    opacity: 0;
-    transition: opacity 0.3s ease-in;
+
+
+/* --- Bottom Player Bar --- */
+.bottom {
+    position: relative; /* Changed from fixed to fit in the flex layout */
+    width: 100%;
+    height: 95px;
+    background-color: black;
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    gap: 5px; /* Adds space between progress bar and icons */
+    padding: 5px 0;
+    flex-shrink: 0; /* Prevents the bottom bar from shrinking */
 }
 
+#myProgressBar {
+    width: 80vw;
+    cursor: pointer;
+}
+
+.icons i {
+    cursor: pointer;
+    margin: 0 10px; /* Adds spacing between icons */
+}
+
+/* REFACTORED: Song info and Volume controls are now positioned with Flexbox, not absolute pixels. */
+.player-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 90vw;
+    position: absolute;
+    bottom: 30px; /* Position relative to the .bottom bar */
+}
+
+.songInfo {
+    font-family: 'Varela', sans-serif;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.songInfo img {
+    width: 30px; /* Give it a size so it takes up space */
+    opacity: 0;
+    transition: opacity 0.4s ease-in;
+}
+
+.volumeControl {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+}
+
+.volumeControl input {
+    width: 80px;
+    height: 4px;
+    cursor: pointer;
+}
+
+/* ======================================================= */
+/* ---               MEDIA QUERIES                     --- */
+/* ======================================================= */
+
+/* --- Tablet & Small Desktop (<= 1024px) --- */
 @media (max-width: 1024px) {
     .container {
-        width: 90%;
-        height: auto;
-        padding: 15px;
-    }
-    .songItem {
-        width: 100%;
-    }
-    .volumeControl {
-        left: 2px;
-        right: 10px;
-        bottom: 608px;
-    }
-}
-
-@media (max-width: 768px) {
-    .brand {
-        font-size: 1.8rem;
-    }
-    .container {
         width: 95%;
-        height: 71.5%;
-        flex-direction: column;
+        margin: 15px auto;
     }
-    .songItem {
-        width: 40%;
-        flex-direction: column;
-        text-align: center;
-    }
-    .bottom {
-        height: 88px;
-    }
-    #myProgressBar {
-        width: 90vw;
+    .player-controls {
+        width: 95vw;
     }
 }
 
-@media (max-width: 480px) {
-    .brand img {
-        width: 50px;
-    }
+
+/* --- Large Mobile & Tablet (<= 768px) --- */
+@media (max-width: 768px) {
     .brand {
         font-size: 1.5rem;
     }
+    .brand img {
+        width: 50px;
+    }
     .container {
-        padding: 10px;
+        margin: 10px auto;
+        padding: 15px;
+    }
+    .bottom {
+        height: 120px; /* Increase height to fit controls comfortably */
+        padding-top: 15px; /* Make space for song info */
+    }
+    .player-controls {
+        /* Remove absolute positioning and let items flow naturally */
+        position: static;
+        flex-direction: column;
+        gap: 10px;
+        width: 95%;
+    }
+    .songInfo {
+        order: 1; /* Display song info first */
+    }
+    .icons {
+        margin-top: 0;
+        order: 2; /* Icons second */
+    }
+    .volumeControl {
+        order: 3; /* Volume last */
+        margin-top: 5px;
+    }
+    #myProgressBar {
+        width: 90vw;
+        position: absolute;
+        top: 5px; /* Place progress bar at the very top of the .bottom bar */
+    }
+}
+
+
+/* --- Small Mobile (<= 480px) --- */
+@media (max-width: 480px) {
+    nav ul li.brand-text {
+        display: none; /* Hide brand text on very small screens to save space */
+    }
+    .brand {
+        font-size: 1.3rem;
     }
     .songItem {
-        height: auto;
-        padding: 10px;
+        /* Make song items smaller */
+        height: 45px;
+        font-size: 0.9rem;
+    }
+    .songItem img {
+        width: 35px;
+        height: 35px;
     }
     .timestamp {
-        margin: 5px 0;
-    }
-}
-
-@media (max-width: 1024px) {
-    .songInfo {
-        left: 1vw;
-        bottom: 3vh;
-    }
-}
-
-@media (max-width: 768px) {
-    .songInfo {
-        left: 1vw;
-        bottom: 3vh;
-    }
-}
-
-@media (max-width: 480px) {
-    .songInfo {
-        left: 1vw;
-        bottom: 3vh;
+        margin: 0 15px;
     }
 }
