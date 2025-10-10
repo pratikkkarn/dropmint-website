@@ -4,82 +4,341 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mint Music</title>
-    <link rel="stylesheet" href="spotify.css">
-    <link rel="icon" type="img/jpg" href="favicon.jpg">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@700&family=Varela+Round&display=swap" rel="stylesheet">
+     <link rel="icon" type="image/jpg" href="favicon.jpg">
+    <style>
+        /* --- Root Variables & Global Styles --- */
+        :root {
+            --glow-color: hsl(271, 95%, 65%);
+            --spotify-green: #1DB954;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html { height: 100%; width: 100%; overflow: hidden; }
+
+        @keyframes gradient-animation {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        body {
+            font-family: 'Varela Round', sans-serif;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+            background: linear-gradient(-45deg, #121212, #1d1229, #121212, #122429);
+            background-size: 400% 400%;
+            animation: gradient-animation 20s ease infinite;
+            color: white;
+        }
+
+        /* --- Navigation Bar --- */
+        nav {
+            flex-shrink: 0;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            z-index: 10;
+        }
+
+        nav ul { display: flex; align-items: center; list-style-type: none; height: 65px; padding: 0 4vw; }
+        nav ul li { padding: 0 12px; cursor: pointer; transition: color 0.3s ease; }
+        nav ul li:not(.brand):hover { color: var(--glow-color); }
+        .brand img { width: 50px; padding-right: 15px; transition: transform 0.5s ease-in-out; }
+        .brand:hover img { transform: rotate(360deg); }
+        .brand {
+            display: flex; align-items: center; font-weight: 700; font-size: 1.8rem;
+            font-family: 'Ubuntu', sans-serif; margin-right: auto;
+            background: linear-gradient(45deg, #a855f7, #f97316);
+            -webkit-background-clip: text; background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* ================================================= */
+        /* --- NEW: Dropdown Menu for "About" --- */
+        /* ================================================= */
+        .dropdown {
+            position: relative; /* Establishes a positioning context for the dropdown content */
+        }
+
+        .dropdown span {
+            display: flex;
+            align-items: center;
+            gap: 5px; /* Adds space between "About" and the caret icon */
+        }
+
+        .dropdown .fa-caret-down {
+            transition: transform 0.3s ease-in-out; /* Smooth rotation for the icon */
+        }
+
+        .dropdown:hover .fa-caret-down {
+            transform: rotate(180deg); /* Flips the caret when hovering */
+        }
+
+        /* The container for the dropdown links */
+        .dropdown-content {
+            /* Initially hidden and positioned for animation */
+            visibility: hidden; /* Hides the element completely */
+            opacity: 0;
+            position: absolute; /* Positions relative to the .dropdown list item */
+            left: 50%;
+            top: calc(100% + 15px); /* Positions it 15px below the nav item */
+            transform: translate(-50%, -10px); /* Centers it and moves it up slightly for the slide-down effect */
+            z-index: 20;
+
+            /* Styling to match your website's theme */
+            min-width: 180px;
+            background: rgba(18, 18, 18, 0.5); /* Slightly more solid background for readability */
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            padding: 8px 0;
+            overflow: hidden; /* Ensures child elements conform to the border-radius */
+            
+            /* Smooth transition for the main container */
+            transition: opacity 0.4s ease, transform 0.4s ease, visibility 0.4s;
+        }
+
+        /* This is triggered when you hover over the "About" list item */
+        .dropdown:hover .dropdown-content {
+            visibility: visible; /* Makes it visible */
+            opacity: 1;
+            transform: translate(-50%, 0); /* Moves it down to its final position */
+        }
+
+        /* Styling for individual links in the dropdown */
+        .dropdown-content a {
+            color: #e0e0e0;
+            padding: 12px 20px;
+            text-decoration: none;
+            display: block; /* Makes the entire area clickable */
+            font-size: 0.95rem;
+            
+            /* Animation setup for the staggered effect */
+            opacity: 0;
+            transform: translateX(-15px);
+            transition: opacity 0.3s ease-out, transform 0.3s ease-out, background-color 0.2s ease, color 0.2s ease;
+        }
+
+        /* Hover effect for the links */
+        .dropdown-content a:hover {
+            background-color: rgba(168, 85, 247, 0.2); /* Uses your glow color with transparency */
+            color: white;
+        }
+
+        /* === Staggered Animation Magic === */
+        /* When the dropdown is hovered, this makes the links appear one by one */
+        .dropdown:hover .dropdown-content a {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        /* Adds a slight delay to each subsequent link's animation */
+        .dropdown:hover .dropdown-content a:nth-child(1) {
+            transition-delay: 0.15s;
+        }
+        .dropdown:hover .dropdown-content a:nth-child(2) {
+            transition-delay: 0.25s;
+        }
+        .dropdown:hover .dropdown-content a:nth-child(3) {
+            transition-delay: 0.35s;
+        }
+        
+        /* --- Main Content Container --- */
+        .container {
+            width: 90%; max-width: 900px; margin: 25px auto; padding: 25px;
+            border-radius: 20px;
+            background-image: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('kalakar.jpg');
+            background-size: cover; background-position: center;
+            backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            flex-grow: 1; min-height: 0; display: flex; flex-direction: column;
+        }
+
+        .songList { flex-grow: 1; min-height: 0; display: flex; flex-direction: column; }
+        .songList h1 { font-family: 'Ubuntu', sans-serif; margin-bottom: 20px; flex-shrink: 0; }
+        .songItemContainer {
+            flex-grow: 1; overflow-y: auto; padding: 0 10px;
+            scrollbar-width: thin; scrollbar-color: var(--glow-color) transparent;
+        }
+        .songItemContainer::-webkit-scrollbar { width: 6px; }
+        .songItemContainer::-webkit-scrollbar-track { background: transparent; }
+        .songItemContainer::-webkit-scrollbar-thumb { background-color: var(--glow-color); border-radius: 20px; }
+        .songItem {
+            height: 50px; display: flex; align-items: center; margin: 12px 0;
+            padding: 0 10px; border-radius: 50px;
+            background: rgba(255, 255, 255, 0.05); border: 1px solid transparent;
+            transition: transform 0.2s ease-out, background-color 0.2s ease, border-color 0.2s ease;
+            cursor: pointer;
+        }
+        .songItem:hover {
+            transform: scale(1.02); background: rgba(168, 85, 247, 0.2);
+            border-color: rgba(168, 85, 247, 0.5);
+        }
+        .songItem img { width: 40px; height: 40px; border-radius: 50%; margin-right: 15px; object-fit: cover; }
+        
+        .songName {
+            flex-grow: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-right: 15px;
+        }
+        .song-duration {
+             padding: 0 15px;
+             color: #b3b3b3;
+             font-size: 0.9rem;
+        }
+        .songlistplay {
+             /* No margin-left: auto needed here, flex-grow on songName handles it */
+        }
+
+        .timestamp { margin: 0 15px; display: flex; align-items: center; gap: 15px; }
+        .timestamp i {
+            cursor: pointer; font-size: 1.5rem; color: rgba(255, 255, 255, 0.8);
+            transition: color 0.2s, transform 0.2s, text-shadow 0.2s;
+        }
+        .timestamp i:hover { color: white; transform: scale(1.2); text-shadow: 0 0 10px var(--glow-color); }
+        
+        /* ================================================= */
+        /* --- MODERNIZED BOTTOM PLAYER BAR --- */
+        /* ================================================= */
+        .bottom {
+            flex-shrink: 0; width: 100%; height: 95px;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex; flex-direction: column; justify-content: center;
+            padding: 5px 2vw;
+        }
+        
+        .player-core { display: flex; align-items: center; justify-content: space-between; width: 100%;}
+        .songInfo { flex: 1; display: flex; align-items: center; gap: 15px; min-width: 0; }
+        .songInfo img#currentCoverArt { width: 55px; height: 55px; border-radius: 8px; object-fit: cover; }
+        .songInfo .text-details { display: flex; flex-direction: column; overflow: hidden; }
+        .songInfo span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        #masterSongName { font-size: 1rem; font-weight: bold; }
+        #masterArtistName { font-size: 0.8rem; color: #b3b3b3; }
+
+        .player-controls { flex: 1.5; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+        .icons { display: flex; justify-content: center; align-items: center; gap: 20px; }
+        .icons i {
+            cursor: pointer; font-size: 1.1rem; color: #b3b3b3;
+            transition: transform 0.2s, color 0.2s;
+        }
+        .icons i:hover { color: white; transform: scale(1.1); }
+        .icons i#masterPlay { font-size: 2.5rem; color: white; }
+        .icons i#masterPlay:hover { transform: scale(1.05); }
+        .icons i.active-icon { color: var(--glow-color); }
+
+        .progress-container { width: 100%; display: flex; align-items: center; gap: 10px; }
+        #currentTime, #totalDuration { font-size: 0.8rem; color: #b3b3b3; min-width: 40px; text-align: center; }
+        
+        /* Base range input styling */
+        input[type="range"] {
+            -webkit-appearance: none; /* Remove default styling */
+            appearance: none;
+            background: transparent; /* Hide the default track/thumb */
+            cursor: pointer;
+        }
+
+        /* Progress Bar Styling (only track styling now) */
+        #myProgressBar {
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(to right, var(--spotify-green) 0%, rgba(255, 255, 255, 0.2) 0%);
+            border-radius: 5px;
+            transition: background 0.1s ease-out; /* Smooth gradient update */
+        }
+        /* No ::-webkit-slider-thumb for #myProgressBar */
+
+        /* Volume Slider Styling (only track styling now) */
+        .volumeControl { flex: 1; display: flex; justify-content: flex-end; align-items: center; gap: 10px; }
+        .volumeControl i { cursor: pointer; color: #b3b3b3; transition: color 0.2s; }
+        .volumeControl i:hover { color: white; }
+        #volumeSlider {
+            width: 100px;
+            height: 4px;
+            background: linear-gradient(to right, var(--spotify-green) 100%, rgba(255, 255, 255, 0.2) 100%);
+            border-radius: 4px;
+            transition: background 0.1s ease-out; /* Smooth gradient update */
+        }
+        /* No ::-webkit-slider-thumb for #volumeSlider */
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .volumeControl { display: none; }
+            .player-core { justify-content: space-between; }
+            .player-controls { flex: unset; }
+            .songlistplay {
+                display: none;
+            }
+        }
+    </style>
 </head>
 <body>
     <nav>
         <ul>
             <li class="brand"><img src="mintlogo.png" alt="Mint">Mint</li>
             <li>Home</li>
-            <li>About</li>
+    
+            <li class="dropdown">
+                <span>About <i class="fa-solid fa-caret-down"></i></span>
+                <div class="dropdown-content">
+                    <a href="https://pratikkkarn.github.io/Portfolio2/">The Artist</a>
+                    <a href="https://github.com/pratikkkarn">Contact Us</a>
+                </div>
+            </li>
         </ul>
     </nav>
+
     <div class="container">
         <div class="songList">
             <h1>Versatility EP - Pratik Karn</h1>
-            <div class="songItemContainer">
-                <div class="songItem">
-                    <img alt="1">
-                    <span class="songName">Let me Love You</span>
-                    <span class="songlistplay"><span class="timestamp">0:00<i id="1" class="fa-regular songItemPlay fa-circle-play"></i></span></span>
-                </div>
-                <div class="songItem">
-                    <img alt="1">
-                    <span class="songName">Let me Love You</span>
-                    <span class="songlistplay"><span class="timestamp">0:00<i id="2" class="fa-regular songItemPlay fa-circle-play"></i></span></span>
-                </div>
-                <div class="songItem">
-                    <img alt="1">
-                    <span class="songName">Let me Love You</span>
-                    <span class="songlistplay"><span class="timestamp">0:00<i id="3" class="fa-regular songItemPlay fa-circle-play"></i></span></span>
-                </div>
-                <div class="songItem">
-                    <img alt="1">
-                    <span class="songName">Let me Love You</span>
-                    <span class="songlistplay"><span class="timestamp">0:00<i id="4" class="fa-regular songItemPlay fa-circle-play"></i></span></span>
-                </div>
-                <div class="songItem">
-                    <img alt="1">
-                    <span class="songName">Let me Love You</span>
-                    <span class="songlistplay"><span class="timestamp">0:00<i id="5" class="fa-regular songItemPlay fa-circle-play"></i></span></span>
-                </div>
-                <div class="songItem">
-                    <img alt="1">
-                    <span class="songName">Let me Love You</span>
-                    <span class="songlistplay"><span class="timestamp">0:00<i id="6" class="fa-regular songItemPlay fa-circle-play"></i></span></span>
-                </div>
-                <div class="songItem">
-                    <img alt="1">
-                    <span class="songName">Let me Love You</span>
-                    <span class="songlistplay"><span class="timestamp">0:00<i id="7" class="fa-regular songItemPlay fa-circle-play"></i></span></span>
-                </div>
-                <div class="songItem">
-                    <img alt="1">
-                    <span class="songName">Let me Love You</span>
-                    <span class="songlistplay"><span class="timestamp">0:00<i id="8" class="fa-regular songItemPlay fa-circle-play"></i></span></span>
+            <div class="songItemContainer"></div>
+        </div>
+    </div>
+
+    <div class="bottom">
+        <div class="player-core">
+            <div class="songInfo">
+                <img src="covers/1.jpg" alt="" id="currentCoverArt">
+                <div class="text-details">
+                    <span id="masterSongName">Song Title</span>
+                    <span id="masterArtistName">Artist Name</span>
                 </div>
             </div>
+            <div class="player-controls">
+                <div class="icons">
+                    <i class="fa-solid fa-shuffle" id="shuffle"></i>
+                    <i class="fa-solid fa-backward-step" id="previous"></i>
+                    <i class="fa-regular fa-circle-play" id="masterPlay"></i>
+                    <i class="fa-solid fa-forward-step" id="next"></i>
+                    <i class="fa-solid fa-repeat" id="repeat"></i>
+                </div>
+                <div class="progress-container">
+                    <span id="currentTime">00:00</span>
+                    <input type="range" name="range" id="myProgressBar" min="0" value="0" max="100">
+                    <span id="totalDuration">00:00</span>
+                </div>
+            </div>
+            <div class="volumeControl">
+                <i class="fa-solid fa-volume-high" id="volumeIcon"></i>
+                <input type="range" id="volumeSlider" min="0" max="1" step="0.01" value="1" class="volume-slider">
+            </div>
         </div>
-        <div class="songBanner"></div>
     </div>
-    <div class="bottom">
-        <input type="range" name="range" id="myProgressBar" min="0" value="0" max="100">
-        <div class="icons">
-            <!-- fontawesome icons -->
-            <i class="fa-solid fa-3x fa-backward-step" id="previous"></i>
-            <i class="fa fa-play-circle fa-3x" id="masterPlay"></i>
-            <i class="fa-solid fa-3x fa-forward-step" id="next"></i>
-        </div>
-        <div class="volumeControl">
-            <span id="volumeIcon">🔊</span>
-            <input type="range" id="volumeSlider" min="0" max="1" step="0.01" value="1" class="volume-slider">
-        </div>
-        <div class="songInfo">
-            <img src="playing.gif" width="45px" alt="" id="gif"> <span id="masterSongName">Farra</span>
-        </div>
-    </div>
-    <script src="https://kit.fontawesome.com/10fb4f8bd5.js" crossorigin="anonymous"></script>
-    <script src="/spotify.js"></script>
+
+    <script src="spotify.js"></script>
 </body>
-</html>  
+</html>
