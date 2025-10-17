@@ -87,8 +87,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- SONG DATA ---
     const songs = [
-      { songName: "Let me Love You", artistName: "Justin Bieber", filePath: "song/1.mp3", coverPath: "covers/1.jpg" },
-      { songName: "Cielo", artistName: "Huma-Huma", filePath: "song/2.mp3", coverPath: "covers/2.jpg" },
+      { songName: "Bewafa", artistName: "Pratik karn", filePath: "song/1.mp3", coverPath: "covers/1.jpg" },
+      { songName: "Yaadein Teri", artistName: "Pratik karn", filePath: "song/2.mp3", coverPath: "covers/2.jpg" },
       { songName: "DEAF KEV", artistName: "Invincible", filePath: "song/3.mp3", coverPath: "covers/3.jpg" },
       { songName: "Different Heaven", artistName: "My Heart", filePath: "song/4.mp3", coverPath: "covers/4.jpg" },
       { songName: "Janji-Heroes", artistName: "Tonight", filePath: "song/5.mp3", coverPath: "covers/5.jpg" },
@@ -371,3 +371,4 @@ document.addEventListener('DOMContentLoaded', () => {
     audioElement.volume = volumeSlider.value;
     volumeSlider.style.background = `linear-gradient(to right, var(--spotify-green) ${volumeSlider.value * 100}%, rgba(255, 255, 255, 0.2) ${volumeSlider.value * 100}%)`;
 });
+
