@@ -62,96 +62,35 @@
         }
 
         /* ================================================= */
-        /* --- NEW: Dropdown Menu for "About" --- */
+        /* --- Dropdown Menu for "About" --- */
         /* ================================================= */
-        .dropdown {
-            position: relative; /* Establishes a positioning context for the dropdown content */
-        }
-
-        .dropdown span {
-            display: flex;
-            align-items: center;
-            gap: 5px; /* Adds space between "About" and the caret icon */
-        }
-
-        .dropdown .fa-caret-down {
-            transition: transform 0.3s ease-in-out; /* Smooth rotation for the icon */
-        }
-
-        .dropdown:hover .fa-caret-down {
-            transform: rotate(180deg); /* Flips the caret when hovering */
-        }
-
-        /* The container for the dropdown links */
+        .dropdown { position: relative; }
+        .dropdown span { display: flex; align-items: center; gap: 5px; }
+        .dropdown .fa-caret-down { transition: transform 0.3s ease-in-out; }
+        .dropdown:hover .fa-caret-down { transform: rotate(180deg); }
         .dropdown-content {
-            /* Initially hidden and positioned for animation */
-            visibility: hidden; /* Hides the element completely */
-            opacity: 0;
-            position: absolute; /* Positions relative to the .dropdown list item */
-            left: 50%;
-            top: calc(100% + 15px); /* Positions it 15px below the nav item */
-            transform: translate(-50%, -10px); /* Centers it and moves it up slightly for the slide-down effect */
-            z-index: 20;
-
-            /* Styling to match your website's theme */
-            min-width: 180px;
-            background: rgba(18, 18, 18, 0.5); /* Slightly more solid background for readability */
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-radius: 12px;
+            visibility: hidden; opacity: 0;
+            position: absolute; left: 50%; top: calc(100% + 15px);
+            transform: translate(-50%, -10px); z-index: 20; min-width: 180px;
+            background: rgba(18, 18, 18, 0.5); backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px); border-radius: 12px;
             border: 1px solid rgba(255, 255, 255, 0.1);
             box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-            padding: 8px 0;
-            overflow: hidden; /* Ensures child elements conform to the border-radius */
-            
-            /* Smooth transition for the main container */
+            padding: 8px 0; overflow: hidden;
             transition: opacity 0.4s ease, transform 0.4s ease, visibility 0.4s;
         }
-
-        /* This is triggered when you hover over the "About" list item */
-        .dropdown:hover .dropdown-content {
-            visibility: visible; /* Makes it visible */
-            opacity: 1;
-            transform: translate(-50%, 0); /* Moves it down to its final position */
-        }
-
-        /* Styling for individual links in the dropdown */
+        .dropdown:hover .dropdown-content { visibility: visible; opacity: 1; transform: translate(-50%, 0); }
         .dropdown-content a {
-            color: #e0e0e0;
-            padding: 12px 20px;
-            text-decoration: none;
-            display: block; /* Makes the entire area clickable */
-            font-size: 0.95rem;
-            
-            /* Animation setup for the staggered effect */
-            opacity: 0;
+            color: #e0e0e0; padding: 12px 20px; text-decoration: none;
+            display: block; font-size: 0.95rem; opacity: 0;
             transform: translateX(-15px);
             transition: opacity 0.3s ease-out, transform 0.3s ease-out, background-color 0.2s ease, color 0.2s ease;
         }
-
-        /* Hover effect for the links */
-        .dropdown-content a:hover {
-            background-color: rgba(168, 85, 247, 0.2); /* Uses your glow color with transparency */
-            color: white;
-        }
-
-        /* === Staggered Animation Magic === */
-        /* When the dropdown is hovered, this makes the links appear one by one */
-        .dropdown:hover .dropdown-content a {
-            opacity: 1;
-            transform: translateX(0);
-        }
-
-        /* Adds a slight delay to each subsequent link's animation */
-        .dropdown:hover .dropdown-content a:nth-child(1) {
-            transition-delay: 0.15s;
-        }
-        .dropdown:hover .dropdown-content a:nth-child(2) {
-            transition-delay: 0.25s;
-        }
-        .dropdown:hover .dropdown-content a:nth-child(3) {
-            transition-delay: 0.35s;
-        }
+        .dropdown-content a:hover { background-color: rgba(168, 85, 247, 0.2); color: white; }
+        .dropdown:hover .dropdown-content a { opacity: 1; transform: translateX(0); }
+        .dropdown:hover .dropdown-content a:nth-child(1) { transition-delay: 0.15s; }
+        .dropdown:hover .dropdown-content a:nth-child(2) { transition-delay: 0.25s; }
+        .dropdown:hover .dropdown-content a:nth-child(3) { transition-delay: 0.35s; }
         
         /* --- Main Content Container --- */
         .container {
@@ -186,23 +125,8 @@
             border-color: rgba(168, 85, 247, 0.5);
         }
         .songItem img { width: 40px; height: 40px; border-radius: 50%; margin-right: 15px; object-fit: cover; }
-        
-        .songName {
-            flex-grow: 1;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            margin-right: 15px;
-        }
-        .song-duration {
-            padding: 0 15px;
-            color: #b3b3b3;
-            font-size: 0.9rem;
-        }
-        .songlistplay {
-            /* No margin-left: auto needed here, flex-grow on songName handles it */
-        }
-
+        .songName { flex-grow: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-right: 15px; }
+        .song-duration { padding: 0 15px; color: #b3b3b3; font-size: 0.9rem; }
         .timestamp { margin: 0 15px; display: flex; align-items: center; gap: 15px; }
         .timestamp i {
             cursor: pointer; font-size: 1.5rem; color: rgba(255, 255, 255, 0.8);
@@ -210,9 +134,7 @@
         }
         .timestamp i:hover { color: white; transform: scale(1.2); text-shadow: 0 0 10px var(--glow-color); }
         
-        /* ================================================= */
         /* --- MODERNIZED BOTTOM PLAYER BAR --- */
-        /* ================================================= */
         .bottom {
             flex-shrink: 0; width: 100%; height: 95px;
             background: rgba(0, 0, 0, 0.6);
@@ -244,56 +166,41 @@
         .progress-container { width: 100%; display: flex; align-items: center; gap: 10px; }
         #currentTime, #totalDuration { font-size: 0.8rem; color: #b3b3b3; min-width: 40px; text-align: center; }
         
-        /* Base range input styling */
         input[type="range"] {
-            -webkit-appearance: none; /* Remove default styling */
-            appearance: none;
-            background: transparent; /* Hide the default track/thumb */
-            cursor: pointer;
+            -webkit-appearance: none; appearance: none;
+            background: transparent; cursor: pointer;
         }
 
-        /* Progress Bar Styling (only track styling now) */
         #myProgressBar {
-            width: 100%;
-            height: 5px;
+            width: 100%; height: 5px;
             background: linear-gradient(to right, var(--spotify-green) 0%, rgba(255, 255, 255, 0.2) 0%);
-            border-radius: 5px;
-            transition: background 0.1s ease-out; /* Smooth gradient update */
+            border-radius: 5px; transition: background 0.1s ease-out;
         }
-        /* No ::-webkit-slider-thumb for #myProgressBar */
 
-        /* Volume Slider Styling (only track styling now) */
         .volumeControl { flex: 1; display: flex; justify-content: flex-end; align-items: center; gap: 10px; }
         .volumeControl i { cursor: pointer; color: #b3b3b3; transition: color 0.2s; }
         .volumeControl i:hover { color: white; }
         #volumeSlider {
-            width: 100px;
-            height: 4px;
+            width: 100px; height: 4px;
             background: linear-gradient(to right, var(--spotify-green) 100%, rgba(255, 255, 255, 0.2) 100%);
-            border-radius: 4px;
-            transition: background 0.1s ease-out; /* Smooth gradient update */
+            border-radius: 4px; transition: background 0.1s ease-out;
         }
-        /* No ::-webkit-slider-thumb for #volumeSlider */
 
         /* Responsive */
         @media (max-width: 768px) {
-            /* === FIX APPLIED HERE === */
-            .container {
-                overflow-y: auto; /* Allow this container to scroll if its content is too tall */
-                scrollbar-width: thin; /* Styling scrollbar for Firefox */
-                scrollbar-color: var(--glow-color) transparent;
+            /* === THE FIX ===
+               On mobile, '100vh' is unreliable due to browser address bars.
+               '100svh' (Small Viewport Height) locks the body's height to the
+               smallest visible area, ensuring the entire layout always fits.
+            */
+            body {
+                height: 100svh;
             }
-            .container::-webkit-scrollbar { width: 6px; }
-            .container::-webkit-scrollbar-track { background: transparent; }
-            .container::-webkit-scrollbar-thumb { background-color: var(--glow-color); border-radius: 20px; }
-            /* === END OF FIX === */
 
             .volumeControl { display: none; }
             .player-core { justify-content: space-between; }
             .player-controls { flex: unset; }
-            .songlistplay {
-                display: none;
-            }
+            .songlistplay { display: none; }
         }
     </style>
 </head>
@@ -301,8 +208,6 @@
     <nav>
         <ul>
             <li class="brand"><img src="mintlogo.png" alt="Mint">Mint</li>
-            
-    
             <li class="dropdown">
                 <span>About <i class="fa-solid fa-caret-down"></i></span>
                 <div class="dropdown-content">
