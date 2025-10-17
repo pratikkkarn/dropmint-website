@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@700&family=Varela+Round&display=swap" rel="stylesheet">
-     <link rel="icon" type="image/jpg" href="favicon.jpg">
+    <link rel="icon" type="image/jpg" href="favicon.jpg">
     <style>
         /* --- Root Variables & Global Styles --- */
         :root {
@@ -195,12 +195,12 @@
             margin-right: 15px;
         }
         .song-duration {
-             padding: 0 15px;
-             color: #b3b3b3;
-             font-size: 0.9rem;
+            padding: 0 15px;
+            color: #b3b3b3;
+            font-size: 0.9rem;
         }
         .songlistplay {
-             /* No margin-left: auto needed here, flex-grow on songName handles it */
+            /* No margin-left: auto needed here, flex-grow on songName handles it */
         }
 
         .timestamp { margin: 0 15px; display: flex; align-items: center; gap: 15px; }
@@ -277,6 +277,17 @@
 
         /* Responsive */
         @media (max-width: 768px) {
+            /* === FIX APPLIED HERE === */
+            .container {
+                overflow-y: auto; /* Allow this container to scroll if its content is too tall */
+                scrollbar-width: thin; /* Styling scrollbar for Firefox */
+                scrollbar-color: var(--glow-color) transparent;
+            }
+            .container::-webkit-scrollbar { width: 6px; }
+            .container::-webkit-scrollbar-track { background: transparent; }
+            .container::-webkit-scrollbar-thumb { background-color: var(--glow-color); border-radius: 20px; }
+            /* === END OF FIX === */
+
             .volumeControl { display: none; }
             .player-core { justify-content: space-between; }
             .player-controls { flex: unset; }
