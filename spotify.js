@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     console.log("Welcome to the combined Music Player!");
 
-    // --- CSS Injection for Toast Notifications & UI Enhancements ---
+    // --- NEW: CSS Injection for Toast Notifications & UI Enhancements ---
     const style = document.createElement('style');
     style.innerHTML = `
         #toast-container {
@@ -33,8 +33,9 @@ document.addEventListener('DOMContentLoaded', () => {
             opacity: 1;
             transform: translateY(0);
         }
+        /* Style for the repeat-one icon indicator */
         #repeat.active-icon {
-            position: relative;
+            position: relative; /* Required for pseudo-element positioning */
         }
         #repeat.repeat-one-indicator::after {
             content: '1';
@@ -56,9 +57,12 @@ document.addEventListener('DOMContentLoaded', () => {
     `;
     document.head.appendChild(style);
     
+    // Create a container for toasts once
     const toastContainer = document.createElement('div');
     toastContainer.id = 'toast-container';
     document.body.appendChild(toastContainer);
+    // --- END of NEW CODE SECTION ---
+
 
     // --- STATE & VARIABLES ---
     let songIndex = 0;
@@ -66,7 +70,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let repeatMode = 0; // 0: no repeat, 1: repeat playlist, 2: repeat one
     let lastVolume = 1;
     let audioElement = new Audio();
-    // let animationFrameId; // FIX: This is no longer needed
+    let animationFrameId; // To control the smooth animation loop
 
     // --- DOM ELEMENTS ---
     const masterPlay = document.getElementById('masterPlay');
@@ -77,7 +81,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const repeatBtn = document.getElementById('repeat');
     const volumeSlider = document.getElementById('volumeSlider');
     const volumeIcon = document.getElementById('volumeIcon');
-    const gif = document.getElementById('gif'); 
+    const gif = document.getElementById('gif'); // Assumes an element with id="gif" exists
     const masterSongName = document.getElementById('masterSongName');
     const masterArtistName = document.getElementById('masterArtistName');
     const currentCoverArt = document.getElementById('currentCoverArt');
@@ -87,38 +91,29 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- SONG DATA ---
     const songs = [
-      { songName: "Bewafa", artistName: "Pratik karn", filePath: "song/1.mp3", coverPath: "covers/1.jpg" },
-      { songName: "Yaadein Teri", artistName: "Pratik karn", filePath: "song/2.mp3", coverPath: "covers/2.jpg" },
-      { songName: "DEAF KEV", artistName: "Invincible", filePath: "song/3.mp3", coverPath: "covers/3.jpg" },
-      { songName: "Different Heaven", artistName: "My Heart", filePath: "song/4.mp3", coverPath: "covers/4.jpg" },
-      { songName: "Janji-Heroes", artistName: "Tonight", filePath: "song/5.mp3", coverPath: "covers/5.jpg" },
-      { songName: "Rabba", artistName: "Ehsaan", filePath: "song/6.mp3", coverPath: "covers/6.jpg" },
-      { songName: "Sakhiyaan", artistName: "Maninder Buttar", filePath: "song/7.mp3", coverPath: "covers/7.jpg" },
-      { songName: "Bhula Dena", artistName: "Mustafa Zahid", filePath: "song/8.mp3", coverPath: "covers/8.jpg" },
+        { songName: "Let me Love You", artistName: "Justin Bieber", filePath: "song/1.mp3", coverPath: "covers/1.jpg" },
+        { songName: "Cielo", artistName: "Huma-Huma", filePath: "song/2.mp3", coverPath: "covers/2.jpg" },
+        { songName: "DEAF KEV", artistName: "Invincible", filePath: "song/3.mp3", coverPath: "covers/3.jpg" },
+        { songName: "Different Heaven", artistName: "My Heart", filePath: "song/4.mp3", coverPath: "covers/4.jpg" },
+        { songName: "Janji-Heroes", artistName: "Tonight", filePath: "song/5.mp3", coverPath: "covers/5.jpg" },
+        { songName: "Rabba", artistName: "Ehsaan", filePath: "song/6.mp3", coverPath: "covers/6.jpg" },
+        { songName: "Sakhiyaan", artistName: "Maninder Buttar", filePath: "song/7.mp3", coverPath: "covers/7.jpg" },
+        { songName: "Bhula Dena", artistName: "Mustafa Zahid", filePath: "song/8.mp3", coverPath: "covers/8.jpg" },
     ];
-    
-    // --- NEW: Media Session API Function for Lock Screen Controls ---
-    const updateMediaSession = () => {
-        if ('mediaSession' in navigator) {
-            const song = songs[songIndex];
-            navigator.mediaSession.metadata = new MediaMetadata({
-                title: song.songName,
-                artist: song.artistName,
-                album: 'Mint Music Player',
-                artwork: [
-                    { src: song.coverPath, sizes: '96x96', type: 'image/jpeg' },
-                    { src: song.coverPath, sizes: '128x128', type: 'image/jpeg' },
-                    { src: song.coverPath, sizes: '192x192', type: 'image/jpeg' },
-                    { src: song.coverPath, sizes: '256x256', type: 'image/jpeg' },
-                    { src: song.coverPath, sizes: '384x384', type: 'image/jpeg' },
-                    { src: song.coverPath, sizes: '512x512', type: 'image/jpeg' },
-                ]
-            });
+
+    // Function for smooth progress bar animation
+    const smoothProgressBarUpdate = () => {
+        if (audioElement.duration && !audioElement.paused) {
+            const progress = (audioElement.currentTime / audioElement.duration) * 100;
+            myProgressBar.value = progress;
+            // Update background gradient for visual fill
+            myProgressBar.style.background = `linear-gradient(to right, var(--spotify-green) ${progress}%, rgba(255, 255, 255, 0.2) ${progress}%)`;
+            animationFrameId = requestAnimationFrame(smoothProgressBarUpdate);
         }
     };
-    // --- END of NEW CODE ---
-
+    
     // --- CORE PLAYER FUNCTIONS ---
+
     const loadSong = (index, autoPlay = true) => {
         songIndex = index;
         const song = songs[songIndex];
@@ -128,18 +123,20 @@ document.addEventListener('DOMContentLoaded', () => {
         if (currentCoverArt) currentCoverArt.src = song.coverPath;
         audioElement.currentTime = 0;
         
-        // --- NEW: Update lock screen info when a new song is loaded ---
-        updateMediaSession();
-        // --- END of NEW CODE ---
+        // --- NEW: Show toast notification for the current song ---
+        if (autoPlay) {
+            showToast(`Playing: ${song.songName}`);
+        }
+        // --- END of NEW CODE SECTION ---
 
         if (autoPlay) {
-            showToast(Playing: ${song.songName});
             playSong();
         } else {
             audioElement.addEventListener('loadedmetadata', () => {
                 totalDurationSpan.innerText = formatTime(audioElement.duration);
+                // Reset progress bar visual state on new song load (when not autoplaying)
                 myProgressBar.value = 0;
-                myProgressBar.style.background = linear-gradient(to right, var(--spotify-green) 0%, rgba(255, 255, 255, 0.2) 0%);
+                myProgressBar.style.background = `linear-gradient(to right, var(--spotify-green) 0%, rgba(255, 255, 255, 0.2) 0%)`;
             }, { once: true });
             updateUI();
         }
@@ -151,21 +148,13 @@ document.addEventListener('DOMContentLoaded', () => {
             updateUI();
         });
         updateUI();
-        // --- NEW: Update media session playback state for lock screen ---
-        if ('mediaSession' in navigator) {
-            navigator.mediaSession.playbackState = 'playing';
-        }
-        // --- END of NEW CODE ---
+        requestAnimationFrame(smoothProgressBarUpdate); // Start the smooth animation loop
     };
 
     const pauseSong = () => {
         audioElement.pause();
         updateUI();
-        // --- NEW: Update media session playback state for lock screen ---
-        if ('mediaSession' in navigator) {
-            navigator.mediaSession.playbackState = 'paused';
-        }
-        // --- END of NEW CODE ---
+        cancelAnimationFrame(animationFrameId); // Stop the smooth animation loop
     };
 
     const nextSong = () => {
@@ -187,38 +176,56 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // --- UI & UTILITY FUNCTIONS ---
+
+    // --- NEW: Toast Notification Function ---
     const showToast = (message) => {
         const toast = document.createElement('div');
         toast.className = 'toast';
         toast.textContent = message;
         toastContainer.appendChild(toast);
-        setTimeout(() => { toast.classList.add('show'); }, 10);
+
+        // Animate in
+        setTimeout(() => {
+            toast.classList.add('show');
+        }, 10); // Short delay to allow element to be added to DOM
+
+        // Animate out and remove
         setTimeout(() => {
             toast.classList.remove('show');
-            toast.addEventListener('transitionend', () => { toast.remove(); });
-        }, 3000);
+            toast.addEventListener('transitionend', () => {
+                toast.remove();
+            });
+        }, 3000); // Toast visible for 3 seconds
     };
+    // --- END of NEW CODE SECTION ---
 
     const formatTime = (seconds) => {
         if (isNaN(seconds) || seconds < 0) return "00:00";
         const minutes = Math.floor(seconds / 60);
         const remainingSeconds = Math.floor(seconds % 60);
-        return ${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')};
+        return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
     };
 
     const updateUI = () => {
         const isPlaying = !audioElement.paused;
+
         masterPlay.classList.toggle('fa-circle-pause', isPlaying);
         masterPlay.classList.toggle('fa-circle-play', !isPlaying);
+
         if (gif) gif.style.opacity = isPlaying ? "1" : "0";
+
         document.querySelectorAll('.songItemPlay').forEach((icon, index) => {
             const isCurrentSong = (index === songIndex);
             icon.classList.toggle('fa-circle-pause', isCurrentSong && isPlaying);
             icon.classList.toggle('fa-circle-play', !isCurrentSong || !isPlaying);
         });
+
         shuffleBtn.classList.toggle('active-icon', isShuffled);
+        
+        // --- MODIFIED: Improved visual feedback for repeat modes ---
         repeatBtn.classList.toggle('active-icon', repeatMode !== 0);
         repeatBtn.classList.toggle('repeat-one-indicator', repeatMode === 2);
+        // --- END of MODIFIED SECTION ---
     };
     
     const populateSongList = () => {
@@ -240,7 +247,7 @@ document.addEventListener('DOMContentLoaded', () => {
         songs.forEach((song, i) => {
             const tempAudio = new Audio(song.filePath);
             tempAudio.addEventListener('loadedmetadata', () => {
-                const durationSpan = document.getElementById(duration-${i});
+                const durationSpan = document.getElementById(`duration-${i}`);
                 if (durationSpan) {
                     durationSpan.innerText = formatTime(tempAudio.duration);
                 }
@@ -249,38 +256,43 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // --- EVENT LISTENERS ---
+
     masterPlay.addEventListener('click', () => {
         if (audioElement.paused || audioElement.currentTime <= 0) playSong();
         else pauseSong();
     });
 
-    // --- FIX: Replaced requestAnimationFrame with the reliable 'timeupdate' event listener ---
     audioElement.addEventListener('timeupdate', () => {
         if (audioElement.duration) {
-            // Update current time text
             currentTimeSpan.innerText = formatTime(audioElement.currentTime);
-            
-            // Update progress bar value and background
-            const progress = (audioElement.currentTime / audioElement.duration) * 100;
-            myProgressBar.value = progress;
-            myProgressBar.style.background = linear-gradient(to right, var(--spotify-green) ${progress}%, rgba(255, 255, 255, 0.2) ${progress}%);
         }
     });
-    // --- END of FIX ---
     
     audioElement.addEventListener('loadedmetadata', () => {
         totalDurationSpan.innerText = formatTime(audioElement.duration);
     });
-    
-    // --- FIX: This listener now only handles user seeking, not continuous updates ---
+
     myProgressBar.addEventListener('input', () => {
         if (audioElement.duration) {
             audioElement.currentTime = (myProgressBar.value * audioElement.duration) / 100;
+            // Update the gradient background instantly while dragging for better UX
+            const progress = myProgressBar.value;
+            myProgressBar.style.background = `linear-gradient(to right, var(--spotify-green) ${progress}%, rgba(255, 255, 255, 0.2) ${progress}%)`;
+            
+            // If dragging, pause the requestAnimationFrame loop to avoid conflicts
+            cancelAnimationFrame(animationFrameId); 
         }
     });
-    // --- END of FIX ---
+
+    // When user releases the progress bar
+    myProgressBar.addEventListener('change', () => {
+        if (!audioElement.paused) {
+            requestAnimationFrame(smoothProgressBarUpdate); // Restart if it was playing
+        }
+    });
 
     audioElement.addEventListener('ended', () => {
+        cancelAnimationFrame(animationFrameId); // Stop animation on end
         if (repeatMode === 2) {
             loadSong(songIndex);
         } else if (repeatMode === 1 || isShuffled) {
@@ -297,17 +309,27 @@ document.addEventListener('DOMContentLoaded', () => {
     
     shuffleBtn.addEventListener('click', () => {
         isShuffled = !isShuffled;
+        // --- NEW: Show toast notification for shuffle status ---
         showToast(isShuffled ? "Shuffle On" : "Shuffle Off");
+        // --- END of NEW CODE SECTION ---
         updateUI();
     });
 
     repeatBtn.addEventListener('click', () => {
         repeatMode = (repeatMode + 1) % 3;
+        // --- NEW: Show toast notification for repeat status ---
         switch (repeatMode) {
-            case 0: showToast("Repeat Off"); break;
-            case 1: showToast("Repeat Playlist"); break;
-            case 2: showToast("Repeat Song"); break;
+            case 0:
+                showToast("Repeat Off");
+                break;
+            case 1:
+                showToast("Repeat Playlist");
+                break;
+            case 2:
+                showToast("Repeat Song");
+                break;
         }
+        // --- END of NEW CODE SECTION ---
         updateUI();
     });
 
@@ -326,7 +348,9 @@ document.addEventListener('DOMContentLoaded', () => {
     volumeSlider.addEventListener('input', (e) => {
         audioElement.volume = e.target.value;
         const volumePercentage = e.target.value * 100;
-        volumeSlider.style.background = linear-gradient(to right, var(--spotify-green) ${volumePercentage}%, rgba(255, 255, 255, 0.2) ${volumePercentage}%);
+        // Update volume bar gradient
+        volumeSlider.style.background = `linear-gradient(to right, var(--spotify-green) ${volumePercentage}%, rgba(255, 255, 255, 0.2) ${volumePercentage}%)`;
+
         if (e.target.value > 0.5) volumeIcon.className = "fa-solid fa-volume-high";
         else if (e.target.value > 0) volumeIcon.className = "fa-solid fa-volume-low";
         else volumeIcon.className = "fa-solid fa-volume-xmark";
@@ -338,20 +362,25 @@ document.addEventListener('DOMContentLoaded', () => {
             audioElement.volume = 0;
             volumeSlider.value = 0;
             volumeIcon.className = "fa-solid fa-volume-xmark";
-            volumeSlider.style.background = linear-gradient(to right, var(--spotify-green) 0%, rgba(255, 255, 255, 0.2) 0%);
+            volumeSlider.style.background = `linear-gradient(to right, var(--spotify-green) 0%, rgba(255, 255, 255, 0.2) 0%)`; // Update gradient
         } else {
             audioElement.volume = lastVolume;
             volumeSlider.value = lastVolume;
             volumeIcon.className = lastVolume > 0.5 ? "fa-solid fa-volume-high" : "fa-solid fa-volume-low";
-            volumeSlider.style.background = linear-gradient(to right, var(--spotify-green) ${lastVolume * 100}%, rgba(255, 255, 255, 0.2) ${lastVolume * 100}%);
+            volumeSlider.style.background = `linear-gradient(to right, var(--spotify-green) ${lastVolume * 100}%, rgba(255, 255, 255, 0.2) ${lastVolume * 100}%)`; // Update gradient
         }
     });
 
     document.addEventListener('keydown', (e) => {
         if (e.target.tagName === 'INPUT') return;
-        if (e.code === 'Space') { e.preventDefault(); masterPlay.click(); } 
-        else if (e.code === 'ArrowRight') { nextSong(); } 
-        else if (e.code === 'ArrowLeft') { prevSong(); }
+        if (e.code === 'Space') {
+            e.preventDefault();
+            masterPlay.click();
+        } else if (e.code === 'ArrowRight') {
+            nextSong();
+        } else if (e.code === 'ArrowLeft') {
+            prevSong();
+        }
     });
 
     // --- INITIALIZATION ---
@@ -359,15 +388,7 @@ document.addEventListener('DOMContentLoaded', () => {
     fetchAndDisplayDurations();
     loadSong(0, false);
     
-    // --- NEW: Setup Media Session Action Handlers for Lock Screen ---
-    if ('mediaSession' in navigator) {
-        navigator.mediaSession.setActionHandler('play', playSong);
-        navigator.mediaSession.setActionHandler('pause', pauseSong);
-        navigator.mediaSession.setActionHandler('previoustrack', prevSong);
-        navigator.mediaSession.setActionHandler('nexttrack', nextSong);
-    }
-    // --- END of NEW CODE ---
-    
-    audioElement.volume = volumeSlider.value;
-    volumeSlider.style.background = linear-gradient(to right, var(--spotify-green) ${volumeSlider.value * 100}%, rgba(255, 255, 255, 0.2) ${volumeSlider.value * 100}%);
+    // Initialize volume slider background
+    audioElement.volume = volumeSlider.value; // Ensure audio volume matches slider's initial value
+    volumeSlider.style.background = `linear-gradient(to right, var(--spotify-green) ${volumeSlider.value * 100}%, rgba(255, 255, 255, 0.2) ${volumeSlider.value * 100}%)`;
 });
