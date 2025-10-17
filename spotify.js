@@ -1,12 +1,12 @@
 document.addEventListener('DOMContentLoaded', () => {
-    console.log("Welcome to the Expanded Music Player!");
+    console.log("Welcome to the combined Music Player!");
 
-    // --- CSS Injection for UI ---
+    // --- CSS Injection for Toast Notifications & UI Enhancements ---
     const style = document.createElement('style');
     style.innerHTML = `
         #toast-container {
             position: fixed;
-            bottom: 110px;
+            bottom: 110px; /* Position above the player */
             left: 50%;
             transform: translateX(-50%);
             z-index: 9999;
@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
             gap: 10px;
         }
         .toast {
-            background-color: rgba(18, 18, 18, 0.85);
+            background-color: rgba(18, 18, 18, 0.8);
             color: #fff;
             padding: 12px 24px;
             border-radius: 25px;
@@ -29,14 +29,29 @@ document.addEventListener('DOMContentLoaded', () => {
             transform: translateY(20px);
             transition: opacity 0.4s ease, transform 0.4s ease;
         }
-        .toast.show { opacity: 1; transform: translateY(0); }
-        #repeat.active-icon { position: relative; }
+        .toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        #repeat.active-icon {
+            position: relative;
+        }
         #repeat.repeat-one-indicator::after {
-            content: '1'; position: absolute; top: -2px; right: -4px;
-            background-color: var(--glow-color, #a855f7); color: white;
-            border-radius: 50%; width: 12px; height: 12px; font-size: 9px;
-            font-weight: bold; display: flex; align-items: center;
-            justify-content: center; line-height: 1;
+            content: '1';
+            position: absolute;
+            top: -2px;
+            right: -4px;
+            background-color: var(--glow-color, #a855f7);
+            color: white;
+            border-radius: 50%;
+            width: 12px;
+            height: 12px;
+            font-size: 9px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
         }
     `;
     document.head.appendChild(style);
@@ -51,6 +66,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let repeatMode = 0; // 0: no repeat, 1: repeat playlist, 2: repeat one
     let lastVolume = 1;
     let audioElement = new Audio();
+    // let animationFrameId; // FIX: This is no longer needed
 
     // --- DOM ELEMENTS ---
     const masterPlay = document.getElementById('masterPlay');
@@ -81,35 +97,26 @@ document.addEventListener('DOMContentLoaded', () => {
       { songName: "Bhula Dena", artistName: "Mustafa Zahid", filePath: "song/8.mp3", coverPath: "covers/8.jpg" },
     ];
     
-    // --- MEDIA SESSION API FUNCTIONS ---
-    const updateMediaSessionMetadata = () => {
-        if (!('mediaSession' in navigator)) return;
-        const song = songs[songIndex];
-        navigator.mediaSession.metadata = new MediaMetadata({
-            title: song.songName,
-            artist: song.artistName,
-            album: 'Mint Music Player',
-            artwork: [
-                { src: song.coverPath, sizes: '96x96', type: 'image/jpeg' },
-                { src: song.coverPath, sizes: '128x128', type: 'image/jpeg' },
-                { src: song.coverPath, sizes: '192x192', type: 'image/jpeg' },
-                { src: song.coverPath, sizes: '256x256', type: 'image/jpeg' },
-                { src: song.coverPath, sizes: '384x384', type: 'image/jpeg' },
-                { src: song.coverPath, sizes: '512x512', type: 'image/jpeg' },
-            ]
-        });
-    };
-
-    // --- EXPANDED: Update the position state for the lock screen progress bar
-    const updatePositionState = () => {
-        if ('mediaSession' in navigator && audioElement.duration) {
-            navigator.mediaSession.setPositionState({
-                duration: audioElement.duration,
-                playbackRate: audioElement.playbackRate,
-                position: audioElement.currentTime,
+    // --- NEW: Media Session API Function for Lock Screen Controls ---
+    const updateMediaSession = () => {
+        if ('mediaSession' in navigator) {
+            const song = songs[songIndex];
+            navigator.mediaSession.metadata = new MediaMetadata({
+                title: song.songName,
+                artist: song.artistName,
+                album: 'Mint Music Player',
+                artwork: [
+                    { src: song.coverPath, sizes: '96x96', type: 'image/jpeg' },
+                    { src: song.coverPath, sizes: '128x128', type: 'image/jpeg' },
+                    { src: song.coverPath, sizes: '192x192', type: 'image/jpeg' },
+                    { src: song.coverPath, sizes: '256x256', type: 'image/jpeg' },
+                    { src: song.coverPath, sizes: '384x384', type: 'image/jpeg' },
+                    { src: song.coverPath, sizes: '512x512', type: 'image/jpeg' },
+                ]
             });
         }
     };
+    // --- END of NEW CODE ---
 
     // --- CORE PLAYER FUNCTIONS ---
     const loadSong = (index, autoPlay = true) => {
@@ -121,45 +128,44 @@ document.addEventListener('DOMContentLoaded', () => {
         if (currentCoverArt) currentCoverArt.src = song.coverPath;
         audioElement.currentTime = 0;
         
-        updateMediaSessionMetadata();
+        // --- NEW: Update lock screen info when a new song is loaded ---
+        updateMediaSession();
+        // --- END of NEW CODE ---
 
         if (autoPlay) {
+            showToast(Playing: ${song.songName});
             playSong();
         } else {
-            // Pre-load duration for the UI without playing
             audioElement.addEventListener('loadedmetadata', () => {
                 totalDurationSpan.innerText = formatTime(audioElement.duration);
                 myProgressBar.value = 0;
-                myProgressBar.style.background = `linear-gradient(to right, #1DB954 0%, rgba(255, 255, 255, 0.2) 0%)`;
-                updatePositionState(); // Set initial position state
+                myProgressBar.style.background = linear-gradient(to right, var(--spotify-green) 0%, rgba(255, 255, 255, 0.2) 0%);
             }, { once: true });
             updateUI();
         }
     };
 
     const playSong = () => {
-        const playPromise = audioElement.play();
-        if (playPromise !== undefined) {
-            playPromise.then(() => {
-                updateUI();
-                if ('mediaSession' in navigator) {
-                    navigator.mediaSession.playbackState = 'playing';
-                }
-                showToast(`Playing: ${songs[songIndex].songName}`);
-            }).catch(error => {
-                console.error("Playback failed:", error);
-                showToast("Playback failed. Please interact with the page first.");
-                updateUI(); // Ensure UI reflects paused state on failure
-            });
+        audioElement.play().catch(error => {
+            console.error("Playback failed:", error);
+            updateUI();
+        });
+        updateUI();
+        // --- NEW: Update media session playback state for lock screen ---
+        if ('mediaSession' in navigator) {
+            navigator.mediaSession.playbackState = 'playing';
         }
+        // --- END of NEW CODE ---
     };
 
     const pauseSong = () => {
         audioElement.pause();
         updateUI();
+        // --- NEW: Update media session playback state for lock screen ---
         if ('mediaSession' in navigator) {
             navigator.mediaSession.playbackState = 'paused';
         }
+        // --- END of NEW CODE ---
     };
 
     const nextSong = () => {
@@ -176,19 +182,8 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const prevSong = () => {
-        // If the song has been playing for more than 3 seconds, restart it. Otherwise, go to the previous track.
-        if (audioElement.currentTime > 3) {
-            audioElement.currentTime = 0;
-        } else {
-            songIndex = (songIndex - 1 + songs.length) % songs.length;
-            loadSong(songIndex);
-        }
-    };
-    
-    // --- NEW: Seeking function for lock screen controls
-    const seekTime = (seconds) => {
-        audioElement.currentTime = Math.max(0, Math.min(audioElement.duration, audioElement.currentTime + seconds));
-        updatePositionState(); // Update lock screen immediately
+        songIndex = (songIndex - 1 + songs.length) % songs.length;
+        loadSong(songIndex);
     };
 
     // --- UI & UTILITY FUNCTIONS ---
@@ -200,7 +195,7 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => { toast.classList.add('show'); }, 10);
         setTimeout(() => {
             toast.classList.remove('show');
-            toast.addEventListener('transitionend', () => toast.remove());
+            toast.addEventListener('transitionend', () => { toast.remove(); });
         }, 3000);
     };
 
@@ -208,11 +203,11 @@ document.addEventListener('DOMContentLoaded', () => {
         if (isNaN(seconds) || seconds < 0) return "00:00";
         const minutes = Math.floor(seconds / 60);
         const remainingSeconds = Math.floor(seconds % 60);
-        return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+        return ${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')};
     };
 
     const updateUI = () => {
-        const isPlaying = !audioElement.paused && audioElement.readyState > 2;
+        const isPlaying = !audioElement.paused;
         masterPlay.classList.toggle('fa-circle-pause', isPlaying);
         masterPlay.classList.toggle('fa-circle-play', !isPlaying);
         if (gif) gif.style.opacity = isPlaying ? "1" : "0";
@@ -227,15 +222,16 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     
     const populateSongList = () => {
-        if (!songItemContainer) return;
         songItemContainer.innerHTML = '';
         songs.forEach((song, i) => {
             songItemContainer.innerHTML += `
                 <div class="songItem" data-index="${i}">
-                    <img src="${song.coverPath}" alt="${song.songName}" onerror="this.src='covers/default.jpg';">
+                    <img src="${song.coverPath}" alt="${song.songName}">
                     <span class="songName">${song.songName}</span>
-                    <span class="song-duration" id="duration-${i}">--:--</span>
-                    <span class="songlistplay"><i class="fa-regular songItemPlay fa-circle-play"></i></span>
+                    <span class="song-duration" id="duration-${i}">00:00</span>
+                    <span class="songlistplay">
+                        <i class="fa-regular songItemPlay fa-circle-play"></i>
+                    </span>
                 </div>`;
         });
     };
@@ -244,7 +240,7 @@ document.addEventListener('DOMContentLoaded', () => {
         songs.forEach((song, i) => {
             const tempAudio = new Audio(song.filePath);
             tempAudio.addEventListener('loadedmetadata', () => {
-                const durationSpan = document.getElementById(`duration-${i}`);
+                const durationSpan = document.getElementById(duration-${i});
                 if (durationSpan) {
                     durationSpan.innerText = formatTime(tempAudio.duration);
                 }
@@ -253,57 +249,69 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // --- EVENT LISTENERS ---
-    if (masterPlay) masterPlay.addEventListener('click', () => {
+    masterPlay.addEventListener('click', () => {
         if (audioElement.paused || audioElement.currentTime <= 0) playSong();
         else pauseSong();
     });
 
+    // --- FIX: Replaced requestAnimationFrame with the reliable 'timeupdate' event listener ---
     audioElement.addEventListener('timeupdate', () => {
         if (audioElement.duration) {
+            // Update current time text
             currentTimeSpan.innerText = formatTime(audioElement.currentTime);
+            
+            // Update progress bar value and background
             const progress = (audioElement.currentTime / audioElement.duration) * 100;
             myProgressBar.value = progress;
-            myProgressBar.style.background = `linear-gradient(to right, #1DB954 ${progress}%, rgba(255, 255, 255, 0.2) ${progress}%)`;
-            updatePositionState(); // --- EXPANDED: Keep lock screen bar in sync
+            myProgressBar.style.background = linear-gradient(to right, var(--spotify-green) ${progress}%, rgba(255, 255, 255, 0.2) ${progress}%);
         }
     });
+    // --- END of FIX ---
     
     audioElement.addEventListener('loadedmetadata', () => {
         totalDurationSpan.innerText = formatTime(audioElement.duration);
-        updatePositionState();
     });
     
-    if (myProgressBar) myProgressBar.addEventListener('input', () => {
+    // --- FIX: This listener now only handles user seeking, not continuous updates ---
+    myProgressBar.addEventListener('input', () => {
         if (audioElement.duration) {
             audioElement.currentTime = (myProgressBar.value * audioElement.duration) / 100;
-            updatePositionState(); // --- EXPANDED: Update lock screen on manual seek
+        }
+    });
+    // --- END of FIX ---
+
+    audioElement.addEventListener('ended', () => {
+        if (repeatMode === 2) {
+            loadSong(songIndex);
+        } else if (repeatMode === 1 || isShuffled) {
+            nextSong();
+        } else if (songIndex < songs.length - 1) {
+            nextSong();
+        } else {
+            pauseSong();
         }
     });
 
-    audioElement.addEventListener('ended', () => {
-        if (repeatMode === 2) { loadSong(songIndex); } 
-        else if (repeatMode === 1 || isShuffled) { nextSong(); } 
-        else if (songIndex < songs.length - 1) { nextSong(); } 
-        else { pauseSong(); }
-    });
-
-    if (nextBtn) nextBtn.addEventListener('click', nextSong);
-    if (prevBtn) prevBtn.addEventListener('click', prevSong);
+    nextBtn.addEventListener('click', nextSong);
+    prevBtn.addEventListener('click', prevSong);
     
-    if (shuffleBtn) shuffleBtn.addEventListener('click', () => {
+    shuffleBtn.addEventListener('click', () => {
         isShuffled = !isShuffled;
         showToast(isShuffled ? "Shuffle On" : "Shuffle Off");
         updateUI();
     });
 
-    if (repeatBtn) repeatBtn.addEventListener('click', () => {
+    repeatBtn.addEventListener('click', () => {
         repeatMode = (repeatMode + 1) % 3;
-        const messages = ["Repeat Off", "Repeat Playlist", "Repeat Song"];
-        showToast(messages[repeatMode]);
+        switch (repeatMode) {
+            case 0: showToast("Repeat Off"); break;
+            case 1: showToast("Repeat Playlist"); break;
+            case 2: showToast("Repeat Song"); break;
+        }
         updateUI();
     });
 
-    if (songItemContainer) songItemContainer.addEventListener('click', (e) => {
+    songItemContainer.addEventListener('click', (e) => {
         const targetItem = e.target.closest('.songItem');
         if (targetItem) {
             const index = parseInt(targetItem.dataset.index, 10);
@@ -314,68 +322,52 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     });
-    
-    // Simplified Volume Logic
-    if (volumeSlider) volumeSlider.addEventListener('input', (e) => {
-        audioElement.volume = e.target.value;
-    });
 
-    audioElement.addEventListener('volumechange', () => {
-        if (!volumeSlider) return;
-        const volume = audioElement.volume;
-        volumeSlider.value = volume;
-        const volPercent = volume * 100;
-        volumeSlider.style.background = `linear-gradient(to right, #1DB954 ${volPercent}%, rgba(255, 255, 255, 0.2) ${volPercent}%)`;
-        
-        if (volume > 0.5) volumeIcon.className = "fa-solid fa-volume-high";
-        else if (volume > 0) volumeIcon.className = "fa-solid fa-volume-low";
+    volumeSlider.addEventListener('input', (e) => {
+        audioElement.volume = e.target.value;
+        const volumePercentage = e.target.value * 100;
+        volumeSlider.style.background = linear-gradient(to right, var(--spotify-green) ${volumePercentage}%, rgba(255, 255, 255, 0.2) ${volumePercentage}%);
+        if (e.target.value > 0.5) volumeIcon.className = "fa-solid fa-volume-high";
+        else if (e.target.value > 0) volumeIcon.className = "fa-solid fa-volume-low";
         else volumeIcon.className = "fa-solid fa-volume-xmark";
     });
 
-    if (volumeIcon) volumeIcon.addEventListener('click', () => {
+    volumeIcon.addEventListener('click', () => {
         if (audioElement.volume > 0) {
             lastVolume = audioElement.volume;
             audioElement.volume = 0;
+            volumeSlider.value = 0;
+            volumeIcon.className = "fa-solid fa-volume-xmark";
+            volumeSlider.style.background = linear-gradient(to right, var(--spotify-green) 0%, rgba(255, 255, 255, 0.2) 0%);
         } else {
             audioElement.volume = lastVolume;
+            volumeSlider.value = lastVolume;
+            volumeIcon.className = lastVolume > 0.5 ? "fa-solid fa-volume-high" : "fa-solid fa-volume-low";
+            volumeSlider.style.background = linear-gradient(to right, var(--spotify-green) ${lastVolume * 100}%, rgba(255, 255, 255, 0.2) ${lastVolume * 100}%);
         }
     });
 
     document.addEventListener('keydown', (e) => {
         if (e.target.tagName === 'INPUT') return;
-        const keyMap = {
-            'Space': () => masterPlay.click(),
-            'ArrowRight': nextSong,
-            'ArrowLeft': prevSong,
-        };
-        if (keyMap[e.code]) {
-            e.preventDefault();
-            keyMap[e.code]();
-        }
+        if (e.code === 'Space') { e.preventDefault(); masterPlay.click(); } 
+        else if (e.code === 'ArrowRight') { nextSong(); } 
+        else if (e.code === 'ArrowLeft') { prevSong(); }
     });
 
     // --- INITIALIZATION ---
-    const initializePlayer = () => {
-        populateSongList();
-        fetchAndDisplayDurations();
-        loadSong(0, false); // Load the first song but don't play it
-        
-        // --- EXPANDED: Setup Media Session Action Handlers ---
-        if ('mediaSession' in navigator) {
-            navigator.mediaSession.setActionHandler('play', playSong);
-            navigator.mediaSession.setActionHandler('pause', pauseSong);
-            navigator.mediaSession.setActionHandler('previoustrack', prevSong);
-            navigator.mediaSession.setActionHandler('nexttrack', nextSong);
-            // --- NEW: Add seeking handlers ---
-            navigator.mediaSession.setActionHandler('seekbackward', () => seekTime(-10)); // Rewind 10s
-            navigator.mediaSession.setActionHandler('seekforward', () => seekTime(10));  // Forward 10s
-        }
-        
-        // Set initial volume from slider
-        if (volumeSlider) {
-           audioElement.volume = volumeSlider.value;
-        }
-    };
+    populateSongList();
+    fetchAndDisplayDurations();
+    loadSong(0, false);
     
-    initializePlayer();
+    // --- NEW: Setup Media Session Action Handlers for Lock Screen ---
+    if ('mediaSession' in navigator) {
+        navigator.mediaSession.setActionHandler('play', playSong);
+        navigator.mediaSession.setActionHandler('pause', pauseSong);
+        navigator.mediaSession.setActionHandler('previoustrack', prevSong);
+        navigator.mediaSession.setActionHandler('nexttrack', nextSong);
+    }
+    // --- END of NEW CODE ---
+    
+    audioElement.volume = volumeSlider.value;
+    volumeSlider.style.background = linear-gradient(to right, var(--spotify-green) ${volumeSlider.value * 100}%, rgba(255, 255, 255, 0.2) ${volumeSlider.value * 100}%);
 });
