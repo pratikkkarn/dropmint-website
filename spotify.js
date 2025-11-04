@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     console.log("Welcome to the combined Music Player!");
 
-    // --- NEW: CSS Injection for Toast Notifications & UI Enhancements ---
+    // --- CSS Injection for Toast Notifications & UI Enhancements ---
     const style = document.createElement('style');
     style.innerHTML = `
         #toast-container {
@@ -33,9 +33,8 @@ document.addEventListener('DOMContentLoaded', () => {
             opacity: 1;
             transform: translateY(0);
         }
-        /* Style for the repeat-one icon indicator */
         #repeat.active-icon {
-            position: relative; /* Required for pseudo-element positioning */
+            position: relative;
         }
         #repeat.repeat-one-indicator::after {
             content: '1';
@@ -56,13 +55,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     `;
     document.head.appendChild(style);
-    
-    // Create a container for toasts once
+
     const toastContainer = document.createElement('div');
     toastContainer.id = 'toast-container';
     document.body.appendChild(toastContainer);
-    // --- END of NEW CODE SECTION ---
-
 
     // --- STATE & VARIABLES ---
     let songIndex = 0;
@@ -70,7 +66,6 @@ document.addEventListener('DOMContentLoaded', () => {
     let repeatMode = 0; // 0: no repeat, 1: repeat playlist, 2: repeat one
     let lastVolume = 1;
     let audioElement = new Audio();
-    let animationFrameId; // To control the smooth animation loop
 
     // --- DOM ELEMENTS ---
     const masterPlay = document.getElementById('masterPlay');
@@ -81,7 +76,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const repeatBtn = document.getElementById('repeat');
     const volumeSlider = document.getElementById('volumeSlider');
     const volumeIcon = document.getElementById('volumeIcon');
-    const gif = document.getElementById('gif'); // Assumes an element with id="gif" exists
+    const gif = document.getElementById('gif');
+
     const masterSongName = document.getElementById('masterSongName');
     const masterArtistName = document.getElementById('masterArtistName');
     const currentCoverArt = document.getElementById('currentCoverArt');
@@ -91,52 +87,70 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- SONG DATA ---
     const songs = [
-        { songName: "Bewafa", artistName: "Pratik karn", filePath: "song/1.mp3", coverPath: "covers/1.jpg" },
-        { songName: "Yaadein Teri", artistName: "Pratik karn", filePath: "song/2.mp3", coverPath: "covers/2.jpg" },
-        { songName: "DEAF KEV", artistName: "Invincible", filePath: "song/3.mp3", coverPath: "covers/3.jpg" },
-        { songName: "Different Heaven", artistName: "My Heart", filePath: "song/4.mp3", coverPath: "covers/4.jpg" },
-        { songName: "Janji-Heroes", artistName: "Tonight", filePath: "song/5.mp3", coverPath: "covers/5.jpg" },
-        { songName: "Rabba", artistName: "Ehsaan", filePath: "song/6.mp3", coverPath: "covers/6.jpg" },
-        { songName: "Sakhiyaan", artistName: "Maninder Buttar", filePath: "song/7.mp3", coverPath: "covers/7.jpg" },
-        { songName: "Bhula Dena", artistName: "Mustafa Zahid", filePath: "song/8.mp3", coverPath: "covers/8.jpg" },
+      { songName: "Bewafa", artistName: "Pratik karn", filePath: "song/1.mp3", coverPath: "covers/1.jpg" },
+      { songName: "Yaadein Teri", artistName: "Pratik karn", filePath: "song/2.mp3", coverPath: "covers/2.jpg" },
+      { songName: "DEAF KEV", artistName: "Invincible", filePath: "song/3.mp3", coverPath: "covers/3.jpg" },
+      { songName: "Different Heaven", artistName: "My Heart", filePath: "song/4.mp3", coverPath: "covers/4.jpg" },
+      { songName: "Janji-Heroes", artistName: "Tonight", filePath: "song/5.mp3", coverPath: "covers/5.jpg" },
+      { songName: "Rabba", artistName: "Ehsaan", filePath: "song/6.mp3", coverPath: "covers/6.jpg" },
+      { songName: "Sakhiyaan", artistName: "Maninder Buttar", filePath: "song/7.mp3", coverPath: "covers/7.jpg" },
+      { songName: "Bhula Dena", artistName: "Mustafa Zahid", filePath: "song/8.mp3", coverPath: "covers/8.jpg" },
     ];
 
-    // Function for smooth progress bar animation
-    const smoothProgressBarUpdate = () => {
-        if (audioElement.duration && !audioElement.paused) {
-            const progress = (audioElement.currentTime / audioElement.duration) * 100;
-            myProgressBar.value = progress;
-            // Update background gradient for visual fill
-            myProgressBar.style.background = `linear-gradient(to right, var(--spotify-green) ${progress}%, rgba(255, 255, 255, 0.2) ${progress}%)`;
-            animationFrameId = requestAnimationFrame(smoothProgressBarUpdate);
+    // --- NEW: Media Session API Function for Lock Screen Controls ---
+    const updateMediaSession = () => {
+        if ('mediaSession' in navigator) {
+            const song = songs[songIndex];
+            navigator.mediaSession.metadata = new MediaMetadata({
+                title: song.songName,
+                artist: song.artistName,
+                album: 'Mint Music Player',
+                artwork: [
+                    { src: song.coverPath, sizes: '96x96', type: 'image/jpeg' },
+                    { src: song.coverPath, sizes: '128x128', type: 'image/jpeg' },
+                    { src: song.coverPath, sizes: '192x192', type: 'image/jpeg' },
+                    { src: song.coverPath, sizes: '256x256', type: 'image/jpeg' },
+                    { src: song.coverPath, sizes: '384x384', type: 'image/jpeg' },
+                    { src: song.coverPath, sizes: '512x512', type: 'image/jpeg' },
+                ]
+            });
         }
     };
-    
-    // --- CORE PLAYER FUNCTIONS ---
+    // --- END of NEW CODE ---
 
+    // --- CORE PLAYER FUNCTIONS ---
     const loadSong = (index, autoPlay = true) => {
         songIndex = index;
         const song = songs[songIndex];
         audioElement.src = song.filePath;
-        masterSongName.innerText = song.songName;
+        masterSongName && (masterSongName.innerText = song.songName);
         if (masterArtistName) masterArtistName.innerText = song.artistName;
         if (currentCoverArt) currentCoverArt.src = song.coverPath;
         audioElement.currentTime = 0;
-        
-        // --- NEW: Show toast notification for the current song ---
-        if (autoPlay) {
-            showToast(`Playing: ${song.songName}`);
+
+        // reset progress UI
+        if (myProgressBar) {
+            // ensure we use 100 as the normalized max for percent computations
+            myProgressBar.max = 100;
+            myProgressBar.value = 0;
+            myProgressBar.style.background = `linear-gradient(to right, var(--spotify-green) 0%, rgba(255, 255, 255, 0.2) 0%)`;
         }
-        // --- END of NEW CODE SECTION ---
+
+        // --- NEW: Update lock screen info when a new song is loaded ---
+        updateMediaSession();
+        // --- END of NEW CODE ---
 
         if (autoPlay) {
+            showToast(`Playing: ${song.songName}`);
             playSong();
         } else {
+            // update duration UI once metadata loads
             audioElement.addEventListener('loadedmetadata', () => {
-                totalDurationSpan.innerText = formatTime(audioElement.duration);
-                // Reset progress bar visual state on new song load (when not autoplaying)
-                myProgressBar.value = 0;
-                myProgressBar.style.background = `linear-gradient(to right, var(--spotify-green) 0%, rgba(255, 255, 255, 0.2) 0%)`;
+                totalDurationSpan && (totalDurationSpan.innerText = formatTime(audioElement.duration));
+                if (myProgressBar) {
+                    myProgressBar.value = 0;
+                    myProgressBar.style.background = `linear-gradient(to right, var(--spotify-green) 0%, rgba(255, 255, 255, 0.2) 0%)`;
+                }
             }, { once: true });
             updateUI();
         }
@@ -148,13 +162,21 @@ document.addEventListener('DOMContentLoaded', () => {
             updateUI();
         });
         updateUI();
-        requestAnimationFrame(smoothProgressBarUpdate); // Start the smooth animation loop
+        // --- NEW: Update media session playback state for lock screen ---
+        if ('mediaSession' in navigator) {
+            navigator.mediaSession.playbackState = 'playing';
+        }
+        // --- END of NEW CODE ---
     };
 
     const pauseSong = () => {
         audioElement.pause();
         updateUI();
-        cancelAnimationFrame(animationFrameId); // Stop the smooth animation loop
+        // --- NEW: Update media session playback state for lock screen ---
+        if ('mediaSession' in navigator) {
+            navigator.mediaSession.playbackState = 'paused';
+        }
+        // --- END of NEW CODE ---
     };
 
     const nextSong = () => {
@@ -176,28 +198,17 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // --- UI & UTILITY FUNCTIONS ---
-
-    // --- NEW: Toast Notification Function ---
     const showToast = (message) => {
         const toast = document.createElement('div');
         toast.className = 'toast';
         toast.textContent = message;
         toastContainer.appendChild(toast);
-
-        // Animate in
-        setTimeout(() => {
-            toast.classList.add('show');
-        }, 10); // Short delay to allow element to be added to DOM
-
-        // Animate out and remove
+        setTimeout(() => { toast.classList.add('show'); }, 10);
         setTimeout(() => {
             toast.classList.remove('show');
-            toast.addEventListener('transitionend', () => {
-                toast.remove();
-            });
-        }, 3000); // Toast visible for 3 seconds
+            toast.addEventListener('transitionend', () => { toast.remove(); });
+        }, 3000);
     };
-    // --- END of NEW CODE SECTION ---
 
     const formatTime = (seconds) => {
         if (isNaN(seconds) || seconds < 0) return "00:00";
@@ -207,28 +218,26 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const updateUI = () => {
-        const isPlaying = !audioElement.paused;
-
-        masterPlay.classList.toggle('fa-circle-pause', isPlaying);
-        masterPlay.classList.toggle('fa-circle-play', !isPlaying);
-
+        const isPlaying = !audioElement.paused && !audioElement.ended;
+        if (masterPlay) {
+            masterPlay.classList.toggle('fa-circle-pause', isPlaying);
+            masterPlay.classList.toggle('fa-circle-play', !isPlaying);
+        }
         if (gif) gif.style.opacity = isPlaying ? "1" : "0";
-
         document.querySelectorAll('.songItemPlay').forEach((icon, index) => {
             const isCurrentSong = (index === songIndex);
             icon.classList.toggle('fa-circle-pause', isCurrentSong && isPlaying);
             icon.classList.toggle('fa-circle-play', !isCurrentSong || !isPlaying);
         });
-
-        shuffleBtn.classList.toggle('active-icon', isShuffled);
-        
-        // --- MODIFIED: Improved visual feedback for repeat modes ---
-        repeatBtn.classList.toggle('active-icon', repeatMode !== 0);
-        repeatBtn.classList.toggle('repeat-one-indicator', repeatMode === 2);
-        // --- END of MODIFIED SECTION ---
+        if (shuffleBtn) shuffleBtn.classList.toggle('active-icon', isShuffled);
+        if (repeatBtn) {
+            repeatBtn.classList.toggle('active-icon', repeatMode !== 0);
+            repeatBtn.classList.toggle('repeat-one-indicator', repeatMode === 2);
+        }
     };
-    
+
     const populateSongList = () => {
+        if (!songItemContainer) return;
         songItemContainer.innerHTML = '';
         songs.forEach((song, i) => {
             songItemContainer.innerHTML += `
@@ -245,54 +254,87 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const fetchAndDisplayDurations = () => {
         songs.forEach((song, i) => {
-            const tempAudio = new Audio(song.filePath);
+            const tempAudio = new Audio();
+            // try to avoid downloading full audio immediately; set preload metadata
+            tempAudio.preload = 'metadata';
+            tempAudio.src = song.filePath;
             tempAudio.addEventListener('loadedmetadata', () => {
                 const durationSpan = document.getElementById(`duration-${i}`);
                 if (durationSpan) {
                     durationSpan.innerText = formatTime(tempAudio.duration);
                 }
-            });
+                // release reference
+                try { tempAudio.src = ''; } catch (err) {}
+            }, { once: true });
         });
     };
 
+    // --- PROGRESS BAR FIXES ---
+    // Ensure progress bar exists & normalized max
+    if (myProgressBar) {
+        myProgressBar.max = 100; // normalize to percentage-based interactions
+    }
+    let isSeeking = false;
+
+    // pointer events capture mouse + touch -> set seeking flags
+    if (myProgressBar) {
+        myProgressBar.addEventListener('pointerdown', () => { isSeeking = true; });
+        myProgressBar.addEventListener('pointerup', () => { isSeeking = false; });
+        myProgressBar.addEventListener('pointercancel', () => { isSeeking = false; });
+        // if pointer leaves window while dragging, end seeking on document pointerup
+        document.addEventListener('pointerup', () => { isSeeking = false; });
+    }
+
     // --- EVENT LISTENERS ---
+    if (masterPlay) {
+        masterPlay.addEventListener('click', () => {
+            if (audioElement.paused || audioElement.currentTime <= 0) playSong();
+            else pauseSong();
+        });
+    }
 
-    masterPlay.addEventListener('click', () => {
-        if (audioElement.paused || audioElement.currentTime <= 0) playSong();
-        else pauseSong();
-    });
-
+    // timeupdate: do not write slider while user is seeking
     audioElement.addEventListener('timeupdate', () => {
-        if (audioElement.duration) {
-            currentTimeSpan.innerText = formatTime(audioElement.currentTime);
-        }
+        if (!audioElement.duration) return;
+
+        // Update current time text
+        currentTimeSpan && (currentTimeSpan.innerText = formatTime(audioElement.currentTime));
+
+        if (!myProgressBar) return;
+        if (isSeeking) return; // don't override while user drags
+
+        // Use normalized max
+        const max = Number(myProgressBar.max) || 100;
+        const progressValue = (audioElement.currentTime / audioElement.duration) * max;
+        myProgressBar.value = progressValue;
+
+        const percent = (progressValue / max) * 100;
+        myProgressBar.style.background = `linear-gradient(to right, var(--spotify-green) ${percent}%, rgba(255, 255, 255, 0.2) ${percent}%)`;
     });
-    
+
     audioElement.addEventListener('loadedmetadata', () => {
-        totalDurationSpan.innerText = formatTime(audioElement.duration);
+        totalDurationSpan && (totalDurationSpan.innerText = formatTime(audioElement.duration));
     });
 
-    myProgressBar.addEventListener('input', () => {
-        if (audioElement.duration) {
-            audioElement.currentTime = (myProgressBar.value * audioElement.duration) / 100;
-            // Update the gradient background instantly while dragging for better UX
-            const progress = myProgressBar.value;
-            myProgressBar.style.background = `linear-gradient(to right, var(--spotify-green) ${progress}%, rgba(255, 255, 255, 0.2) ${progress}%)`;
-            
-            // If dragging, pause the requestAnimationFrame loop to avoid conflicts
-            cancelAnimationFrame(animationFrameId); 
-        }
-    });
+    // handle user seeking (live)
+    if (myProgressBar) {
+        myProgressBar.addEventListener('input', () => {
+            if (!audioElement.duration) return;
+            const max = Number(myProgressBar.max) || 100;
+            const value = Number(myProgressBar.value);
+            // live update current time (for immediate seeking)
+            audioElement.currentTime = (value / max) * audioElement.duration;
 
-    // When user releases the progress bar
-    myProgressBar.addEventListener('change', () => {
-        if (!audioElement.paused) {
-            requestAnimationFrame(smoothProgressBarUpdate); // Restart if it was playing
-        }
-    });
+            // update background while dragging
+            const percent = (value / max) * 100;
+            myProgressBar.style.background = `linear-gradient(to right, var(--spotify-green) ${percent}%, rgba(255, 255, 255, 0.2) ${percent}%)`;
+
+            // update currentTime display immediately
+            currentTimeSpan && (currentTimeSpan.innerText = formatTime(audioElement.currentTime));
+        });
+    }
 
     audioElement.addEventListener('ended', () => {
-        cancelAnimationFrame(animationFrameId); // Stop animation on end
         if (repeatMode === 2) {
             loadSong(songIndex);
         } else if (repeatMode === 1 || isShuffled) {
@@ -304,36 +346,26 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    nextBtn.addEventListener('click', nextSong);
-    prevBtn.addEventListener('click', prevSong);
-    
-    shuffleBtn.addEventListener('click', () => {
+    nextBtn && nextBtn.addEventListener('click', nextSong);
+    prevBtn && prevBtn.addEventListener('click', prevSong);
+
+    shuffleBtn && shuffleBtn.addEventListener('click', () => {
         isShuffled = !isShuffled;
-        // --- NEW: Show toast notification for shuffle status ---
         showToast(isShuffled ? "Shuffle On" : "Shuffle Off");
-        // --- END of NEW CODE SECTION ---
         updateUI();
     });
 
-    repeatBtn.addEventListener('click', () => {
+    repeatBtn && repeatBtn.addEventListener('click', () => {
         repeatMode = (repeatMode + 1) % 3;
-        // --- NEW: Show toast notification for repeat status ---
         switch (repeatMode) {
-            case 0:
-                showToast("Repeat Off");
-                break;
-            case 1:
-                showToast("Repeat Playlist");
-                break;
-            case 2:
-                showToast("Repeat Song");
-                break;
+            case 0: showToast("Repeat Off"); break;
+            case 1: showToast("Repeat Playlist"); break;
+            case 2: showToast("Repeat Song"); break;
         }
-        // --- END of NEW CODE SECTION ---
         updateUI();
     });
 
-    songItemContainer.addEventListener('click', (e) => {
+    songItemContainer && songItemContainer.addEventListener('click', (e) => {
         const targetItem = e.target.closest('.songItem');
         if (targetItem) {
             const index = parseInt(targetItem.dataset.index, 10);
@@ -345,51 +377,69 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    volumeSlider.addEventListener('input', (e) => {
-        audioElement.volume = e.target.value;
-        const volumePercentage = e.target.value * 100;
-        // Update volume bar gradient
-        volumeSlider.style.background = `linear-gradient(to right, var(--spotify-green) ${volumePercentage}%, rgba(255, 255, 255, 0.2) ${volumePercentage}%)`;
+    // volume controls (safe guards added)
+    if (volumeSlider) {
+        volumeSlider.addEventListener('input', (e) => {
+            const val = Number(e.target.value);
+            audioElement.volume = val;
+            const volumePercentage = val * 100;
+            volumeSlider.style.background = `linear-gradient(to right, var(--spotify-green) ${volumePercentage}%, rgba(255, 255, 255, 0.2) ${volumePercentage}%)`;
+            if (volumeIcon) {
+                if (val > 0.5) volumeIcon.className = "fa-solid fa-volume-high";
+                else if (val > 0) volumeIcon.className = "fa-solid fa-volume-low";
+                else volumeIcon.className = "fa-solid fa-volume-xmark";
+            }
+        });
+    }
 
-        if (e.target.value > 0.5) volumeIcon.className = "fa-solid fa-volume-high";
-        else if (e.target.value > 0) volumeIcon.className = "fa-solid fa-volume-low";
-        else volumeIcon.className = "fa-solid fa-volume-xmark";
-    });
-
-    volumeIcon.addEventListener('click', () => {
-        if (audioElement.volume > 0) {
-            lastVolume = audioElement.volume;
-            audioElement.volume = 0;
-            volumeSlider.value = 0;
-            volumeIcon.className = "fa-solid fa-volume-xmark";
-            volumeSlider.style.background = `linear-gradient(to right, var(--spotify-green) 0%, rgba(255, 255, 255, 0.2) 0%)`; // Update gradient
-        } else {
-            audioElement.volume = lastVolume;
-            volumeSlider.value = lastVolume;
-            volumeIcon.className = lastVolume > 0.5 ? "fa-solid fa-volume-high" : "fa-solid fa-volume-low";
-            volumeSlider.style.background = `linear-gradient(to right, var(--spotify-green) ${lastVolume * 100}%, rgba(255, 255, 255, 0.2) ${lastVolume * 100}%)`; // Update gradient
-        }
-    });
+    if (volumeIcon) {
+        volumeIcon.addEventListener('click', () => {
+            if (audioElement.volume > 0) {
+                lastVolume = audioElement.volume;
+                audioElement.volume = 0;
+                if (volumeSlider) {
+                    volumeSlider.value = 0;
+                    volumeSlider.style.background = `linear-gradient(to right, var(--spotify-green) 0%, rgba(255, 255, 255, 0.2) 0%)`;
+                }
+                volumeIcon.className = "fa-solid fa-volume-xmark";
+            } else {
+                audioElement.volume = lastVolume;
+                if (volumeSlider) {
+                    volumeSlider.value = lastVolume;
+                    volumeSlider.style.background = `linear-gradient(to right, var(--spotify-green) ${lastVolume * 100}%, rgba(255, 255, 255, 0.2) ${lastVolume * 100}%)`;
+                }
+                volumeIcon.className = lastVolume > 0.5 ? "fa-solid fa-volume-high" : "fa-solid fa-volume-low";
+            }
+        });
+    }
 
     document.addEventListener('keydown', (e) => {
         if (e.target.tagName === 'INPUT') return;
-        if (e.code === 'Space') {
-            e.preventDefault();
-            masterPlay.click();
-        } else if (e.code === 'ArrowRight') {
-            nextSong();
-        } else if (e.code === 'ArrowLeft') {
-            prevSong();
-        }
+        if (e.code === 'Space') { e.preventDefault(); masterPlay && masterPlay.click(); }
+        else if (e.code === 'ArrowRight') { nextSong(); }
+        else if (e.code === 'ArrowLeft') { prevSong(); }
     });
 
     // --- INITIALIZATION ---
     populateSongList();
     fetchAndDisplayDurations();
     loadSong(0, false);
-    
-    // Initialize volume slider background
-    audioElement.volume = volumeSlider.value; // Ensure audio volume matches slider's initial value
-    volumeSlider.style.background = `linear-gradient(to right, var(--spotify-green) ${volumeSlider.value * 100}%, rgba(255, 255, 255, 0.2) ${volumeSlider.value * 100}%)`;
-});
 
+    // --- NEW: Setup Media Session Action Handlers for Lock Screen ---
+    if ('mediaSession' in navigator) {
+        navigator.mediaSession.setActionHandler('play', playSong);
+        navigator.mediaSession.setActionHandler('pause', pauseSong);
+        navigator.mediaSession.setActionHandler('previoustrack', prevSong);
+        navigator.mediaSession.setActionHandler('nexttrack', nextSong);
+    }
+    // --- END of NEW CODE ---
+
+    // set initial volume from slider if available
+    if (volumeSlider) {
+        audioElement.volume = Number(volumeSlider.value);
+        const pct = (Number(volumeSlider.value) || 0) * 100;
+        volumeSlider.style.background = `linear-gradient(to right, var(--spotify-green) ${pct}%, rgba(255, 255, 255, 0.2) ${pct}%)`;
+    } else {
+        audioElement.volume = 1;
+    }
+});
