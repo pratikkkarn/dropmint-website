@@ -1048,10 +1048,8 @@
                         const file = new File([blob], 'song_card.png', { type: 'image/png' });
                         try {
                             // Attempt to share File + URL + Text
+                            // Note: Sending file ONLY is crucial for some OS to trigger Story mode
                             await navigator.share({
-                                // title: 'Mint Music', // Optional
-                                // text: text + ' ' + url, // Text + Link as caption fallback
-                                // url: url,               // URL as attachment
                                 files: [file]
                             });
                             closeShareMenu();
