@@ -542,6 +542,9 @@
 <body>
     <div class="dynamic-background"></div>
 
+    <!-- HIDDEN CANVAS for generating "Story" images -->
+    <canvas id="shareCanvas" width="1080" height="1920" style="display: none;"></canvas>
+
     <nav>
         <ul>
             <li class="brand"><img src="mintlogo.png" alt="Mint">Mint</li>
@@ -790,6 +793,7 @@
         const shareInsta = document.getElementById('shareInsta');
         const shareSnap = document.getElementById('shareSnap');
         const shareCopy = document.getElementById('shareCopy');
+        const shareCanvas = document.getElementById('shareCanvas');
 
         // --- NEW BANNER & BACKGROUND ELEMENTS ---
         const dynamicBackground = document.querySelector('.dynamic-background');
@@ -968,33 +972,103 @@
 
         // --- SHARE DEEP LINK LOGIC (FIXED) ---
         const getShareUrl = () => {
-            // Generate deep link: dropmint.online?song={index}
             return `https://dropmint.online?song=${songIndex}`;
         }
         
         const getShareText = () => `Listen to ${songs[songIndex].songName} by ${songs[songIndex].artistName} on Mint Music!`;
 
-        // FIXED: Robust Share Handler
+        // --- NEW: GENERATE SHARE CARD IMAGE ---
+        const drawShareImage = (song, callback) => {
+            const ctx = shareCanvas.getContext('2d');
+            const img = new Image();
+            img.crossOrigin = "Anonymous"; // Try to handle CORS if served correctly
+            img.src = song.coverPath;
+            
+            img.onload = () => {
+                // 1. Background Gradient
+                const grd = ctx.createLinearGradient(0, 0, 0, 1920);
+                grd.addColorStop(0, "#222");
+                grd.addColorStop(1, "#000");
+                ctx.fillStyle = grd;
+                ctx.fillRect(0, 0, 1080, 1920);
+
+                // 2. Draw Album Art
+                // Center X: 540, Center Y: 800. Size: 800x800
+                ctx.shadowColor = "rgba(0,0,0,0.5)";
+                ctx.shadowBlur = 50;
+                ctx.drawImage(img, 140, 400, 800, 800);
+                ctx.shadowBlur = 0;
+
+                // 3. Text
+                ctx.textAlign = "center";
+                ctx.fillStyle = "white";
+                
+                // Title
+                ctx.font = "bold 70px Ubuntu";
+                ctx.fillText(song.songName, 540, 1350);
+                
+                // Artist
+                ctx.font = "50px Varela Round";
+                ctx.fillStyle = "#b3b3b3";
+                ctx.fillText(song.artistName, 540, 1430);
+
+                // Branding
+                ctx.font = "bold 40px Ubuntu";
+                ctx.fillStyle = "#1DB954"; // Mint Green
+                ctx.fillText("dropmint.online", 540, 1750);
+
+                // Convert to Blob
+                shareCanvas.toBlob((blob) => {
+                    callback(blob);
+                }, 'image/png');
+            };
+        };
+
+        // FIXED: Robust Share Handler with Image
         const handleShare = async (platform) => {
             const url = getShareUrl();
             const text = getShareText();
+            const currentSong = songs[songIndex];
 
-            // 1. Try Native Share first (Best for Mobile to open Apps directly)
-            if (navigator.share && platform === 'native') {
-                try {
-                    await navigator.share({
-                        title: 'Mint Music',
-                        text: text,
-                        url: url
-                    });
-                    closeShareMenu();
-                    return;
-                } catch (err) {
-                    console.log('Share closed/failed', err);
-                }
+            // Handle specific apps that need image generation (Snapchat/Insta)
+            // Note: Web Share API level 2 supports files. 
+            if (platform === 'instagram' || platform === 'snapchat') {
+                showToast("Generating Story Card...");
+                
+                drawShareImage(currentSong, async (blob) => {
+                    if (blob && navigator.share) {
+                        const file = new File([blob], 'song_card.png', { type: 'image/png' });
+                        try {
+                            // Attempt to share File + URL
+                            // Note: Some platforms might drop the URL if a file is present.
+                            await navigator.share({
+                                title: 'Mint Music',
+                                text: text,
+                                url: url,
+                                files: [file]
+                            });
+                            closeShareMenu();
+                        } catch (err) {
+                            console.log("Share failed", err);
+                            // Fallback to just opening the app if share fails
+                            if(platform === 'instagram') window.location.href = 'instagram://app';
+                            if(platform === 'snapchat') window.location.href = 'snapchat://';
+                        }
+                    } else {
+                        // Fallback if sharing files isn't supported
+                        navigator.clipboard.writeText(url);
+                        showToast("Link copied! Opening App...");
+                        setTimeout(() => {
+                            if(platform === 'instagram') window.location.href = 'instagram://app';
+                            if(platform === 'snapchat') window.location.href = 'snapchat://';
+                        }, 1000);
+                        closeShareMenu();
+                    }
+                });
+                return;
             }
 
-            // 2. Fallback logic
+            // 2. Fallback logic for others
             if (platform === 'whatsapp') {
                 // Universal link for WA
                 window.location.href = `https://wa.me/?text=${encodeURIComponent(text + ' ' + url)}`;
@@ -1002,15 +1076,6 @@
                 navigator.clipboard.writeText(url).then(() => {
                     showToast("Link copied to clipboard!");
                 });
-            } else {
-                // For Instagram/Snapchat, we copy the link and try to open the app
-                navigator.clipboard.writeText(url);
-                showToast("Link copied! Opening App...");
-                
-                setTimeout(() => {
-                    if(platform === 'instagram') window.location.href = 'instagram://app';
-                    if(platform === 'snapchat') window.location.href = 'snapchat://';
-                }, 500);
             }
             closeShareMenu();
         };
@@ -1018,15 +1083,9 @@
         if(shareWhatsapp) shareWhatsapp.addEventListener('click', () => handleShare('whatsapp'));
         if(shareCopy) shareCopy.addEventListener('click', () => handleShare('copy'));
         
-        // For Insta/Snap/Others, try native share if possible, else fallback
-        if(shareInsta) shareInsta.addEventListener('click', () => {
-            if(navigator.share) handleShare('native');
-            else handleShare('instagram');
-        });
-        if(shareSnap) shareSnap.addEventListener('click', () => {
-            if(navigator.share) handleShare('native');
-            else handleShare('snapchat');
-        });
+        // For Insta/Snap, try to generate image and share
+        if(shareInsta) shareInsta.addEventListener('click', () => handleShare('instagram'));
+        if(shareSnap) shareSnap.addEventListener('click', () => handleShare('snapchat'));
 
 
         // --- UI & UTILITY FUNCTIONS ---
