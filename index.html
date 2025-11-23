@@ -981,7 +981,7 @@
         const drawShareImage = (song, callback) => {
             const ctx = shareCanvas.getContext('2d');
             const img = new Image();
-            img.crossOrigin = "Anonymous"; // Try to handle CORS if served correctly
+            // img.crossOrigin = "Anonymous"; // REMOVED for iPhone local compatibility
             img.src = song.coverPath;
             
             img.onload = () => {
@@ -1012,10 +1012,15 @@
                 ctx.fillStyle = "#b3b3b3";
                 ctx.fillText(song.artistName, 540, 1430);
 
-                // Branding
+                // Branding & Link
                 ctx.font = "bold 40px Ubuntu";
                 ctx.fillStyle = "#1DB954"; // Mint Green
                 ctx.fillText("dropmint.online", 540, 1750);
+                
+                ctx.font = "30px Varela Round";
+                ctx.fillStyle = "#888";
+                // NEW: VISUAL LINK ON IMAGE
+                ctx.fillText("dropmint.online?song=" + songIndex, 540, 1800);
 
                 // Convert to Blob
                 shareCanvas.toBlob((blob) => {
@@ -1035,32 +1040,33 @@
             if (platform === 'instagram' || platform === 'snapchat') {
                 showToast("Generating Story Card...");
                 
+                // 1. Copy Link FIRST (So user can paste in Snapchat/Insta)
+                try { await navigator.clipboard.writeText(url); } catch(e) {}
+
                 drawShareImage(currentSong, async (blob) => {
                     if (blob && navigator.share) {
                         const file = new File([blob], 'song_card.png', { type: 'image/png' });
                         try {
-                            // Attempt to share File + URL
-                            // Note: Some platforms might drop the URL if a file is present.
+                            // Attempt to share File + URL + Text
                             await navigator.share({
-                                title: 'Mint Music',
-                                text: text,
-                                url: url,
+                                // title: 'Mint Music', // Optional
+                                // text: text + ' ' + url, // Text + Link as caption fallback
+                                // url: url,               // URL as attachment
                                 files: [file]
                             });
                             closeShareMenu();
                         } catch (err) {
                             console.log("Share failed", err);
                             // Fallback to just opening the app if share fails
-                            if(platform === 'instagram') window.location.href = 'instagram://app';
-                            if(platform === 'snapchat') window.location.href = 'snapchat://';
+                            if(platform === 'instagram') window.location.href = 'instagram://story-camera';
+                            if(platform === 'snapchat') window.location.href = 'snapchat://creative-kit';
                         }
                     } else {
                         // Fallback if sharing files isn't supported
-                        navigator.clipboard.writeText(url);
                         showToast("Link copied! Opening App...");
                         setTimeout(() => {
-                            if(platform === 'instagram') window.location.href = 'instagram://app';
-                            if(platform === 'snapchat') window.location.href = 'snapchat://';
+                            if(platform === 'instagram') window.location.href = 'instagram://story-camera';
+                            if(platform === 'snapchat') window.location.href = 'snapchat://creative-kit';
                         }, 1000);
                         closeShareMenu();
                     }
