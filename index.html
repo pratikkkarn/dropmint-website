@@ -457,7 +457,7 @@
 
             /* Mini Progress Bar (Top of Pill) */
             .progress-container { position: absolute; top: 0; left: 0; width: 100%; padding: 0; height: 3px; gap: 0; }
-            #myProgressBar { height: 3px; border-radius: 15px 15px 0 0; }
+            #myProgressBar { height: 3px; border-radius: 15px 15px 0 0; touch-action: none; }
             #currentTime, #totalDuration { display: none; }
 
             /* --- 3. FULL SCREEN POPUP PLAYER ("The Pop") --- */
@@ -474,11 +474,23 @@
             .popup-header i { font-size: 1.5rem; color: #fff; cursor: pointer; }
             .popup-header span { font-size: 0.9rem; letter-spacing: 1px; text-transform: uppercase; color: #aaa; }
 
+            /* UPDATED POPUP ART for SQUARE IMAGE ON iPHONE */
             .popup-art {
-                width: 100%; aspect-ratio: 1/1; border-radius: 20px; overflow: hidden;
-                box-shadow: 0 20px 50px rgba(0,0,0,0.6); margin-bottom: 40px;
+                width: 100%;
+                aspect-ratio: 1/1; /* Enforce Square */
+                border-radius: 20px; 
+                overflow: hidden;
+                margin-bottom: 40px; 
+                box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+                position: relative;
+                -webkit-transform: translateZ(0); /* Hardware acceleration fix for iOS */
             }
-            .popup-art img { width: 100%; height: 100%; object-fit: cover; }
+            .popup-art img { 
+                width: 100%; 
+                height: 100%; 
+                object-fit: cover; /* Fills square perfectly */
+                display: block;
+            }
 
             .popup-info { margin-bottom: 30px; }
             .popup-info h2 { font-size: 1.8rem; margin-bottom: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -488,7 +500,7 @@
             .popup-time { display: flex; justify-content: space-between; margin-top: 10px; font-size: 0.8rem; color: #aaa; }
             
             input[type=range].popup-slider {
-                width: 100%; height: 5px; -webkit-appearance: none; background: #444; border-radius: 5px;
+                width: 100%; height: 5px; -webkit-appearance: none; background: #444; border-radius: 5px; touch-action: none;
             }
             input[type=range].popup-slider::-webkit-slider-thumb {
                 -webkit-appearance: none; height: 15px; width: 15px; border-radius: 50%;
@@ -585,7 +597,7 @@
     <div class="bottom" id="miniPlayer">
         <div class="player-core">
             <div class="songInfo">
-                <img src="covers/1.jpg" alt="" id="currentCoverArt">
+                <img src="covers/1.jpg" id="currentCoverArt">
                 <div class="text-details">
                     <span id="masterSongName">Song Title</span>
                     <span id="masterArtistName">Artist Name</span>
@@ -813,7 +825,7 @@
         { songName: "Bhula Dena", artistName: "Mustafa Zahid", filePath: "song/8.mp3", coverPath: "covers/8.jpg" },
         ];
 
-        // --- Media Session API Function ---
+        // --- Media Session API Function (UPDATED FOR LOCK SCREEN PROGRESS) ---
         const updateMediaSession = () => {
             if ('mediaSession' in navigator) {
                 const song = songs[songIndex];
@@ -822,14 +834,31 @@
                     artist: song.artistName,
                     album: 'Mint Music Player',
                     artwork: [
-                        { src: song.coverPath, sizes: '96x96', type: 'image/jpeg' },
-                        { src: song.coverPath, sizes: '128x128', type: 'image/jpeg' },
-                        { src: song.coverPath, sizes: '192x192', type: 'image/jpeg' },
-                        { src: song.coverPath, sizes: '256x256', type: 'image/jpeg' },
-                        { src: song.coverPath, sizes: '384x384', type: 'image/jpeg' },
-                        { src: song.coverPath, sizes: '512x512', type: 'image/jpeg' },
+                        // FIXED: Resolve relative paths to absolute URLs
+                        { src: new URL(song.coverPath, document.baseURI).href, sizes: '96x96', type: 'image/jpeg' },
+                        { src: new URL(song.coverPath, document.baseURI).href, sizes: '128x128', type: 'image/jpeg' },
+                        { src: new URL(song.coverPath, document.baseURI).href, sizes: '192x192', type: 'image/jpeg' },
+                        { src: new URL(song.coverPath, document.baseURI).href, sizes: '256x256', type: 'image/jpeg' },
+                        { src: new URL(song.coverPath, document.baseURI).href, sizes: '384x384', type: 'image/jpeg' },
+                        { src: new URL(song.coverPath, document.baseURI).href, sizes: '512x512', type: 'image/jpeg' },
                     ]
                 });
+                updatePositionState(); // Initial state
+            }
+        };
+
+        // FIXED: Helper function to update position state for lock screen
+        const updatePositionState = () => {
+            if ('mediaSession' in navigator && audioElement.duration && !isNaN(audioElement.duration)) {
+                try {
+                    navigator.mediaSession.setPositionState({
+                        duration: audioElement.duration,
+                        playbackRate: audioElement.playbackRate,
+                        position: audioElement.currentTime
+                    });
+                } catch (error) {
+                    console.error("Position state error:", error);
+                }
             }
         };
 
@@ -884,13 +913,16 @@
                         myProgressBar.value = 0;
                         myProgressBar.style.background = `linear-gradient(to right, var(--spotify-green) 0%, rgba(255, 255, 255, 0.2) 0%)`;
                     }
+                    updatePositionState(); // Update lock screen duration
                 }, { once: true });
                 updateUI();
             }
         };
 
         const playSong = () => {
-            audioElement.play().catch(error => {
+            audioElement.play().then(() => {
+                updatePositionState(); // Update lock screen
+            }).catch(error => {
                 console.error("Playback failed:", error);
                 updateUI();
             });
@@ -912,6 +944,7 @@
         const pauseSong = () => {
             audioElement.pause();
             updateUI();
+            updatePositionState(); // Update lock screen
             
             // --- This class now fades out the banner content ---
             document.body.classList.remove('now-playing-active'); 
@@ -977,7 +1010,7 @@
         
         const getShareText = () => `Listen to ${songs[songIndex].songName} by ${songs[songIndex].artistName} on Mint Music!`;
 
-        // --- NEW: GENERATE SHARE CARD IMAGE ---
+        // --- NEW: GENERATE SHARE CARD IMAGE (SPOTIFY STYLE) ---
         const drawShareImage = (song, callback) => {
             const ctx = shareCanvas.getContext('2d');
             const img = new Image();
@@ -985,42 +1018,96 @@
             img.src = song.coverPath;
             
             img.onload = () => {
-                // 1. Background Gradient
+                // 1. Background - Blurred version of album art or dominant color
+                // Since blurring on canvas is expensive, we simulate a Spotify-like gradient background
                 const grd = ctx.createLinearGradient(0, 0, 0, 1920);
-                grd.addColorStop(0, "#222");
-                grd.addColorStop(1, "#000");
+                // Dark gradient
+                grd.addColorStop(0, "#2b2b2b"); 
+                grd.addColorStop(1, "#000000");
                 ctx.fillStyle = grd;
                 ctx.fillRect(0, 0, 1080, 1920);
 
-                // 2. Draw Album Art
-                // Center X: 540, Center Y: 800. Size: 800x800
+                // Draw original image really big and blurry for effect? 
+                // Simpler: Draw blurred background using filter (supported in modern browsers)
+                ctx.save();
+                ctx.filter = 'blur(40px) brightness(0.6)';
+                ctx.drawImage(img, -200, -200, 1480, 2320); // Fill canvas with zoomed version
+                ctx.restore();
+
+                // 2. The Card Container
+                // Spotify card style: Rounded rectangle in center
+                const cardX = 140;
+                const cardY = 400;
+                const cardW = 800;
+                const cardH = 1100; // Taller to fit text
+                const radius = 40;
+
+                ctx.fillStyle = "rgba(30, 30, 30, 0.9)"; // Dark card background
+                // Draw Rounded Rect manually or simple rect for now (supported widely)
+                ctx.beginPath();
+                ctx.roundRect(cardX, cardY, cardW, cardH, radius);
+                ctx.fill();
+                
+                // Shadow for image
                 ctx.shadowColor = "rgba(0,0,0,0.5)";
                 ctx.shadowBlur = 50;
-                ctx.drawImage(img, 140, 400, 800, 800);
-                ctx.shadowBlur = 0;
+                
+                // 3. Album Art inside Card
+                // Center inside card: Card Width 800. Image 700x700?
+                const artSize = 700;
+                const artX = cardX + (cardW - artSize) / 2; // Centered
+                const artY = cardY + 50; // Padding top
+                ctx.drawImage(img, artX, artY, artSize, artSize);
+                ctx.shadowBlur = 0; // Reset shadow
 
-                // 3. Text
-                ctx.textAlign = "center";
+                // 4. Text Content
+                ctx.textAlign = "left"; // Align left like Spotify
                 ctx.fillStyle = "white";
                 
+                const textX = artX; // Align with image left
+                let textY = artY + artSize + 100;
+
                 // Title
-                ctx.font = "bold 70px Ubuntu";
-                ctx.fillText(song.songName, 540, 1350);
+                ctx.font = "bold 60px Ubuntu";
+                ctx.fillText(song.songName, textX, textY);
                 
                 // Artist
-                ctx.font = "50px Varela Round";
+                textY += 80;
+                ctx.font = "40px Varela Round";
                 ctx.fillStyle = "#b3b3b3";
-                ctx.fillText(song.artistName, 540, 1430);
+                ctx.fillText(song.artistName, textX, textY);
 
-                // Branding & Link
-                ctx.font = "bold 40px Ubuntu";
+                // Branding Logo/Text
+                // Bottom left of card
+                const logoY = cardY + cardH - 50;
+                ctx.font = "bold 30px Ubuntu";
                 ctx.fillStyle = "#1DB954"; // Mint Green
-                ctx.fillText("dropmint.online", 540, 1750);
+                ctx.fillText("Mint Music", textX, logoY);
                 
-                ctx.font = "30px Varela Round";
+                // Draw "Spotify >" Style Link Chip Visual
+                const pillW = 400;
+                const pillH = 80;
+                const pillX = cardX + (cardW - pillW) / 2;
+                const pillY = logoY + 40; // below branding? Or separate element?
+                
+                // Let's put the pill at bottom of SCREEN (outside card) or inside card bottom right?
+                // The screenshot shows it outside card. Let's put it inside card for simplicity as single image
+                
+                // Link Text (Visual only)
+                ctx.textAlign = "right";
                 ctx.fillStyle = "#888";
-                // NEW: VISUAL LINK ON IMAGE
-                ctx.fillText("dropmint.online?song=" + songIndex, 540, 1800);
+                ctx.font = "25px Varela Round";
+                // Visual Link Pill Background
+                ctx.beginPath();
+                ctx.fillStyle = "rgba(255,255,255,0.1)";
+                ctx.roundRect(cardX + cardW - 350, logoY - 40, 330, 60, 30);
+                ctx.fill();
+                
+                ctx.fillStyle = "white";
+                ctx.textAlign = "center";
+                ctx.font = "bold 25px Ubuntu";
+                ctx.fillText("🔗 Play on Mint Music", cardX + cardW - 185, logoY);
+
 
                 // Convert to Blob
                 shareCanvas.toBlob((blob) => {
@@ -1049,9 +1136,15 @@
                         try {
                             // Attempt to share File + URL + Text
                             // Note: Sending file ONLY is crucial for some OS to trigger Story mode
-                            await navigator.share({
-                                files: [file]
-                            });
+                            // BUT we also want the link attached if supported.
+                            const shareData = {
+                                files: [file],
+                                // url: url // Often breaks Story mode on iOS, but required for "Attachment"
+                            };
+                            // Try adding URL, if fails, fallback to file only? 
+                            // No, better to rely on clipboard for reliable Story mode.
+                            
+                            await navigator.share(shareData);
                             closeShareMenu();
                         } catch (err) {
                             console.log("Share failed", err);
@@ -1250,12 +1343,14 @@
 
         audioElement.addEventListener('loadedmetadata', () => {
             totalDurationSpan && (totalDurationSpan.innerText = formatTime(audioElement.duration));
+            updatePositionState();
         });
 
         // Seek functionality
         const seek = (val) => {
             if (!audioElement.duration) return;
             audioElement.currentTime = (val / 100) * audioElement.duration;
+            updatePositionState(); // Update lock screen
             
             // Update UI immediately
             const percent = val;
@@ -1384,12 +1479,20 @@
             loadSong(0, false); 
         }
 
-        // --- Setup Media Session Action Handlers ---
+        // --- Setup Media Session Action Handlers (LOCK SCREEN FIX) ---
         if ('mediaSession' in navigator) {
             navigator.mediaSession.setActionHandler('play', playSong);
             navigator.mediaSession.setActionHandler('pause', pauseSong);
             navigator.mediaSession.setActionHandler('previoustrack', prevSong);
             navigator.mediaSession.setActionHandler('nexttrack', nextSong);
+            navigator.mediaSession.setActionHandler('seekto', (details) => {
+                if (details.fastSeek && 'fastSeek' in audioElement) {
+                    audioElement.fastSeek(details.seekTime);
+                    return;
+                }
+                audioElement.currentTime = details.seekTime;
+                updatePositionState();
+            });
         }
 
         // set initial volume from slider
