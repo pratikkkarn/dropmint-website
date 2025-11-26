@@ -192,6 +192,15 @@ document.addEventListener('DOMContentLoaded', () => {
         if(shareArtist) shareArtist.innerText = song.artistName;
         if(shareArt) shareArt.src = song.coverPath;
 
+        // 5. UPDATE OFFICIAL SNAP BUTTON LINK DYNAMICALLY
+        const snapButton = document.querySelector('.snapchat-creative-kit-share');
+        if(snapButton) {
+            // Update the data attribute so if SDK re-reads it, it's correct
+            snapButton.dataset.shareUrl = `https://dropmint.online?song=${index}`;
+            // If the SDK has already rendered an iframe/button, we might need to manually
+            // handle this via the Custom Button, which is reliable.
+        }
+
         audioElement.currentTime = 0;
         
         // Reset Progress Bars
@@ -306,7 +315,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- SHARE & CANVAS LOGIC (SNAPCHAT CREATIVE KIT) ---
     
-    // 1. Generate the Image
+    // 1. Generate the Image (Song Card)
     const drawShareImage = (song, callback) => {
         if(!shareCanvas) return;
         const ctx = shareCanvas.getContext('2d');
@@ -366,8 +375,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (platform === 'snapchat') {
             showToast("Opening Snapchat...");
             
+            // Generate the Song Card
             drawShareImage(currentSong, (dataUrl) => {
-                // Trigger Snap Kit
+                // Trigger Snap Kit Programmatically
                 if (window.snap && window.snap.creativekit) {
                     snap.creativekit.share({
                       shareData: {
@@ -379,7 +389,8 @@ document.addEventListener('DOMContentLoaded', () => {
                             scale: 1
                           }
                         },
-                        attachmentUrl: deepLink
+                        // Ensure we share the SONG LINK, not the Kit URL
+                        attachmentUrl: deepLink 
                       }
                     });
                     if(shareOverlay) shareOverlay.classList.remove('active');
@@ -397,7 +408,6 @@ document.addEventListener('DOMContentLoaded', () => {
             if(shareOverlay) shareOverlay.classList.remove('active');
         }
         else if (platform === 'instagram') {
-             // Instagram Web doesn't support direct story sharing via API easily, just copy link
              navigator.clipboard.writeText(deepLink).then(() => showToast("Link Copied for Instagram!"));
              window.location.href = "instagram://story-camera"; 
         }
