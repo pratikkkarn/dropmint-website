@@ -1026,26 +1026,31 @@
             
             img.onload = () => {
                 // 1. Background - Blurred version of album art or dominant color
+                // Since blurring on canvas is expensive, we simulate a Spotify-like gradient background
                 const grd = ctx.createLinearGradient(0, 0, 0, 1920);
+                // Dark gradient
                 grd.addColorStop(0, "#2b2b2b"); 
                 grd.addColorStop(1, "#000000");
                 ctx.fillStyle = grd;
                 ctx.fillRect(0, 0, 1080, 1920);
 
-                // Draw original image really big and blurry
+                // Draw original image really big and blurry for effect? 
+                // Simpler: Draw blurred background using filter (supported in modern browsers)
                 ctx.save();
                 ctx.filter = 'blur(40px) brightness(0.6)';
-                ctx.drawImage(img, -200, -200, 1480, 2320); 
+                ctx.drawImage(img, -200, -200, 1480, 2320); // Fill canvas with zoomed version
                 ctx.restore();
 
                 // 2. The Card Container
+                // Spotify card style: Rounded rectangle in center
                 const cardX = 140;
                 const cardY = 400;
                 const cardW = 800;
-                const cardH = 1100;
+                const cardH = 1100; // Taller to fit text
                 const radius = 40;
 
-                ctx.fillStyle = "rgba(30, 30, 30, 0.9)"; 
+                ctx.fillStyle = "rgba(30, 30, 30, 0.9)"; // Dark card background
+                // Draw Rounded Rect manually or simple rect for now (supported widely)
                 ctx.beginPath();
                 ctx.roundRect(cardX, cardY, cardW, cardH, radius);
                 ctx.fill();
@@ -1055,17 +1060,18 @@
                 ctx.shadowBlur = 50;
                 
                 // 3. Album Art inside Card
+                // Center inside card: Card Width 800. Image 700x700?
                 const artSize = 700;
-                const artX = cardX + (cardW - artSize) / 2; 
-                const artY = cardY + 50; 
+                const artX = cardX + (cardW - artSize) / 2; // Centered
+                const artY = cardY + 50; // Padding top
                 ctx.drawImage(img, artX, artY, artSize, artSize);
-                ctx.shadowBlur = 0; 
+                ctx.shadowBlur = 0; // Reset shadow
 
                 // 4. Text Content
-                ctx.textAlign = "left"; 
+                ctx.textAlign = "left"; // Align left like Spotify
                 ctx.fillStyle = "white";
                 
-                const textX = artX; 
+                const textX = artX; // Align with image left
                 let textY = artY + artSize + 100;
 
                 // Title
@@ -1079,15 +1085,26 @@
                 ctx.fillText(song.artistName, textX, textY);
 
                 // Branding Logo/Text
+                // Bottom left of card
                 const logoY = cardY + cardH - 50;
                 ctx.font = "bold 30px Ubuntu";
-                ctx.fillStyle = "#1DB954"; 
+                ctx.fillStyle = "#1DB954"; // Mint Green
                 ctx.fillText("Mint Music", textX, logoY);
                 
-                // Visual Link Pill
+                // Draw "Spotify >" Style Link Chip Visual
+                const pillW = 400;
+                const pillH = 80;
+                const pillX = cardX + (cardW - pillW) / 2;
+                const pillY = logoY + 40; // below branding? Or separate element?
+                
+                // Let's put the pill at bottom of SCREEN (outside card) or inside card bottom right?
+                // The screenshot shows it outside card. Let's put it inside card for simplicity as single image
+                
+                // Link Text (Visual only)
                 ctx.textAlign = "right";
                 ctx.fillStyle = "#888";
                 ctx.font = "25px Varela Round";
+                // Visual Link Pill Background
                 ctx.beginPath();
                 ctx.fillStyle = "rgba(255,255,255,0.1)";
                 ctx.roundRect(cardX + cardW - 350, logoY - 40, 330, 60, 30);
@@ -1099,9 +1116,10 @@
                 ctx.fillText("🔗 Play on Mint Music", cardX + cardW - 185, logoY);
 
 
-                // --- UPDATED FOR SNAPCHAT SDK: Convert to Data URL (Base64) ---
-                const dataUrl = shareCanvas.toDataURL('image/png');
-                callback(dataUrl);
+                // Convert to Blob
+                shareCanvas.toBlob((blob) => {
+                    callback(blob);
+                }, 'image/png');
             };
         };
 
@@ -1111,67 +1129,52 @@
             const text = getShareText();
             const currentSong = songs[songIndex];
 
-            // 1. SNAPCHAT SPECIFIC LOGIC (Using Creative Kit SDK)
-            if (platform === 'snapchat') {
-                showToast("Opening Snapchat...");
-                
-                // Generate the Sticker
-                drawShareImage(currentSong, (dataUrl) => {
-                    
-                    // The Creative Kit "Handshake"
-                    if (window.snap && window.snap.creativekit) {
-                        snap.creativekit.share({
-                          shareData: {
-                            sticker: {
-                              src: dataUrl,
-                              metadata: {
-                                type: "SNAP_IMAGE",
-                                position: "center",
-                                scale: 1
-                              }
-                            },
-                            attachmentUrl: url
-                          }
-                        });
-                        closeShareMenu();
-                    } else {
-                        showToast("Snapchat SDK not loaded!");
-                    }
-                });
-                return;
-            }
-
-            // 2. INSTAGRAM LOGIC (Generic File Share)
-            if (platform === 'instagram') {
+            // Handle specific apps that need image generation (Snapchat/Insta)
+            // Note: Web Share API level 2 supports files. 
+            if (platform === 'instagram' || platform === 'snapchat') {
                 showToast("Generating Story Card...");
+                
+                // 1. Copy Link FIRST (So user can paste in Snapchat/Insta)
                 try { await navigator.clipboard.writeText(url); } catch(e) {}
 
-                drawShareImage(currentSong, async (dataUrl) => {
-                    // Convert DataURL back to Blob for navigator.share
-                    const res = await fetch(dataUrl);
-                    const blob = await res.blob();
-                    
+                drawShareImage(currentSong, async (blob) => {
                     if (blob && navigator.share) {
                         const file = new File([blob], 'song_card.png', { type: 'image/png' });
                         try {
-                            const shareData = { files: [file] };
+                            // Attempt to share File + URL + Text
+                            // Note: Sending file ONLY is crucial for some OS to trigger Story mode
+                            // BUT we also want the link attached if supported.
+                            const shareData = {
+                                files: [file],
+                                // url: url // Often breaks Story mode on iOS, but required for "Attachment"
+                            };
+                            // Try adding URL, if fails, fallback to file only? 
+                            // No, better to rely on clipboard for reliable Story mode.
+                            
                             await navigator.share(shareData);
                             closeShareMenu();
                         } catch (err) {
                             console.log("Share failed", err);
-                            window.location.href = 'instagram://story-camera';
+                            // Fallback to just opening the app if share fails
+                            if(platform === 'instagram') window.location.href = 'instagram://story-camera';
+                            if(platform === 'snapchat') window.location.href = 'snapchat://creative-kit';
                         }
                     } else {
-                        showToast("Link copied! Opening Instagram...");
-                        setTimeout(() => { window.location.href = 'instagram://story-camera'; }, 1000);
+                        // Fallback if sharing files isn't supported
+                        showToast("Link copied! Opening App...");
+                        setTimeout(() => {
+                            if(platform === 'instagram') window.location.href = 'instagram://story-camera';
+                            if(platform === 'snapchat') window.location.href = 'snapchat://creative-kit';
+                        }, 1000);
                         closeShareMenu();
                     }
                 });
                 return;
             }
 
-            // 3. Fallback logic for others
+            // 2. Fallback logic for others
             if (platform === 'whatsapp') {
+                // Universal link for WA
                 window.location.href = `https://wa.me/?text=${encodeURIComponent(text + ' ' + url)}`;
             } else if (platform === 'copy') {
                 navigator.clipboard.writeText(url).then(() => {
