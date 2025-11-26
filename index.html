@@ -4,7 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mint Music</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" xintegrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    
+    <meta property="og:site_name" content="Mint Music" />
+    <meta property="snapchat:sticker" content="https://kit.snapchat.com/ckweb/test/image.png" />
+    <meta property="snapchat:app_id" content="506ff128-052e-4905-9663-6fb3c9a41af9" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@700&family=Varela+Round&display=swap" rel="stylesheet">
@@ -14,13 +18,10 @@
         :root {
             --glow-color: hsl(271, 95%, 65%);
             --spotify-green: #1DB954;
-            /* Added transition speed */
             --transition-speed: 0.5s;
-            --transition-curve: cubic-bezier(0.25, 1, 0.5, 1);
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
-
         html { height: 100%; width: 100%; overflow: hidden; }
 
         @keyframes gradient-animation {
@@ -31,47 +32,27 @@
 
         /* --- DYNAMIC BACKGROUND --- */
         .dynamic-background {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            z-index: -2; /* Behind the gradient overlay */
-            background-size: cover;
-            background-position: center;
-            filter: blur(30px) scale(1.1);
-            opacity: 0; /* Start hidden */
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            z-index: -2; background-size: cover; background-position: center;
+            filter: blur(30px) scale(1.1); opacity: 0;
             transition: background-image 1.2s ease-in-out, opacity 0.8s ease-in-out;
         }
-        /* Fade in background when song plays */
-        body.now-playing-active .dynamic-background {
-            opacity: 0.8;
-        }
+        body.now-playing-active .dynamic-background { opacity: 0.8; }
 
         body {
             font-family: 'Varela Round', sans-serif;
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-            overflow: hidden;
+            display: flex; flex-direction: column; height: 100vh; overflow: hidden;
             background: linear-gradient(-45deg, #121212, #1d1229, #121212, #122429);
-            background-size: 400% 400%;
-            animation: gradient-animation 20s ease infinite;
-            color: white;
-            transition: background 0.5s ease;
+            background-size: 400% 400%; animation: gradient-animation 20s ease infinite;
+            color: white; transition: background 0.5s ease;
         }
 
         /* --- Navigation Bar --- */
         nav {
-            flex-shrink: 0;
-            background: rgba(0, 0, 0, 0.4);
-            backdrop-filter: blur(15px);
-            -webkit-backdrop-filter: blur(15px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            z-index: 10;
-            position: relative; /* Ensure it's above background */
+            flex-shrink: 0; background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1); z-index: 10;
         }
-
         nav ul { display: flex; align-items: center; list-style-type: none; height: 65px; padding: 0 4vw; }
         nav ul li { padding: 0 12px; cursor: pointer; transition: color 0.3s ease; }
         nav ul li:not(.brand):hover { color: var(--glow-color); }
@@ -81,468 +62,163 @@
             display: flex; align-items: center; font-weight: 700; font-size: 1.8rem;
             font-family: 'Ubuntu', sans-serif; margin-right: auto;
             background: linear-gradient(45deg, #a855f7, #f97316);
-            -webkit-background-clip: text; background-clip: text;
-            -webkit-text-fill-color: transparent;
+            -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
         }
 
-        /* ================================================= */
-        /* --- Dropdown Menu for "About" --- */
-        /* ================================================= */
+        /* --- Dropdown --- */
         .dropdown { position: relative; }
         .dropdown span { display: flex; align-items: center; gap: 5px; }
-        .dropdown .fa-caret-down { transition: transform 0.3s ease-in-out; }
-        .dropdown:hover .fa-caret-down { transform: rotate(180deg); }
         .dropdown-content {
-            visibility: hidden; opacity: 0;
-            position: absolute; left: 50%; top: calc(100% + 15px);
+            visibility: hidden; opacity: 0; position: absolute; left: 50%; top: calc(100% + 15px);
             transform: translate(-50%, -10px); z-index: 20; min-width: 180px;
             background: rgba(18, 18, 18, 0.5); backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px); border-radius: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-            padding: 8px 0; overflow: hidden;
-            transition: opacity 0.4s ease, transform 0.4s ease, visibility 0.4s;
+            border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 8px 0; transition: opacity 0.4s ease, transform 0.4s ease, visibility 0.4s;
         }
         .dropdown:hover .dropdown-content { visibility: visible; opacity: 1; transform: translate(-50%, 0); }
         .dropdown-content a {
-            color: #e0e0e0; padding: 12px 20px; text-decoration: none;
-            display: block; font-size: 0.95rem; opacity: 0;
-            transform: translateX(-15px);
-            transition: opacity 0.3s ease-out, transform 0.3s ease-out, background-color 0.2s ease, color 0.2s ease;
+            color: #e0e0e0; padding: 12px 20px; text-decoration: none; display: block;
+            font-size: 0.95rem; transition: 0.2s ease;
         }
         .dropdown-content a:hover { background-color: rgba(168, 85, 247, 0.2); color: white; }
-        .dropdown:hover .dropdown-content a { opacity: 1; transform: translateX(0); }
-        .dropdown:hover .dropdown-content a:nth-child(1) { transition-delay: 0.15s; }
-        .dropdown:hover .dropdown-content a:nth-child(2) { transition-delay: 0.25s; }
-        .dropdown:hover .dropdown-content a:nth-child(3) { transition-delay: 0.35s; }
         
-        
-        /* --- Main Content Wrapper (MODIFIED) --- */
-        /* This is now a permanent two-column layout */
+        /* --- Layout --- */
         .main-content-wrapper {
-            display: flex;
-            flex-grow: 1; /* Takes up space between nav and bottom */
-            min-height: 0; /* Flexbox fix */
-            padding: 25px;
-            gap: 25px;
-            overflow: hidden;
+            display: flex; flex-grow: 1; min-height: 0; padding: 25px; gap: 25px; overflow: hidden;
         }
 
-        /* --- Song List (.container) Modifications --- */
         .container {
-            margin: 0;
-            /* MODIFIED: Fixed width, no shrinking */
-            flex-basis: 420px; /* Made smaller */
-            flex-shrink: 0;
-            /* REMOVED transition: flex-basis */
-            
-            /* Glassmorphism */
-            padding: 25px;
-            border-radius: 20px;
-            background: rgba(0, 0, 0, 0.2);
-            backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+            margin: 0; flex-basis: 420px; flex-shrink: 0;
+            padding: 25px; border-radius: 20px;
+            background: rgba(0, 0, 0, 0.2); backdrop-filter: blur(15px);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-            
-            min-height: 0; 
-            display: flex; 
-            flex-direction: column;
+            min-height: 0; display: flex; flex-direction: column;
         }
 
-        /* --- Song Banner (MODIFIED) --- */
         .song-banner {
-            /* MODIFIED: Takes remaining space, always visible */
-            flex-grow: 1;  
-            opacity: 1; /* Frame is always visible */
-            overflow: hidden;
-            position: relative; /* For stacking content */
-
-            border-radius: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 20px;
-            padding: 30px;
-
-            /* Glassmorphism */
-            background: rgba(0, 0, 0, 0.3);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
+            flex-grow: 1; opacity: 1; overflow: hidden; position: relative;
+            border-radius: 20px; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; gap: 20px; padding: 30px;
+            background: rgba(0, 0, 0, 0.3); backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            
-            /* REMOVED transition */
         }
 
-        /* --- NEW: Banner Placeholder --- */
         .banner-placeholder {
-            position: absolute;
-            inset: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 15px;
-            color: rgba(255, 255, 255, 0.4);
-            /* STATE 1: Visible */
-            opacity: 1;
-            transform: scale(1);
-            transition: opacity var(--transition-speed) ease, transform var(--transition-speed) ease;
+            position: absolute; inset: 0; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; gap: 15px; color: rgba(255, 255, 255, 0.4);
+            transition: opacity 0.5s ease, transform 0.5s ease;
         }
-        .banner-placeholder i {
-            font-size: 4rem;
-        }
-        .banner-placeholder p {
-            font-size: 1.2rem;
-            font-family: 'Ubuntu', sans-serif;
-        }
-
-        /* --- MODIFIED: Banner Content --- */
+        .banner-placeholder i { font-size: 4rem; }
+        
         .banner-content {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            width: 100%;
-            height: 100%;
-            /* STATE 1: Hidden */
-            opacity: 0;
-            transform: scale(0.95);
-            transition: opacity var(--transition-speed) ease, transform var(--transition-speed) ease;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            width: 100%; height: 100%; opacity: 0; transform: scale(0.95);
+            transition: opacity 0.5s ease, transform 0.5s ease;
         }
-        
-        /* === THIS IS THE FIX === */
         .banner-content img {
-            /* Removed width: 80% */
-            /* Removed max-width: 400px */
-            max-width: 80%; /* NEW: Constrain width relative to container */
-            max-height: 60%; /* NEW: Constrain height relative to container */
-            aspect-ratio: 1/1;
-            object-fit: cover;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            max-width: 80%; max-height: 60%; aspect-ratio: 1/1; object-fit: cover;
+            border-radius: 15px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
         }
-        /* ======================== */
+        .banner-content h2 { font-size: 2rem; color: white; margin-top: 20px; text-align: center; }
+        .banner-content p { font-size: 1.2rem; color: #b3b3b3; }
 
-        .banner-content h2 {
-            font-family: 'Ubuntu', sans-serif;
-            font-size: 2rem;
-            text-align: center;
-            color: white;
-            margin-top: 20px;
-        }
-        .banner-content p {
-            font-size: 1.2rem;
-            color: #b3b3b3;
-        }
+        body.now-playing-active .banner-placeholder { opacity: 0; transform: scale(0.95); pointer-events: none; }
+        body.now-playing-active .banner-content { opacity: 1; transform: scale(1); }
 
-        /* --- STATE 2: Activated by JS (MODIFIED) --- */
-        /* Controls the content inside the banner, not the banner itself */
-        body.now-playing-active .banner-placeholder {
-            opacity: 0;
-            transform: scale(0.95);
-            pointer-events: none;
-        }
-        body.now-playing-active .banner-content {
-            opacity: 1;
-            transform: scale(1);
-        }
-
-
-        /* --- Song List Inner Styles (List Format) --- */
-        .songList { 
-            flex-grow: 1;
-            min-height: 0;
-            display: flex; 
-            flex-direction: column; 
-        }
-        .songList h1 { 
-            font-family: 'Ubuntu', sans-serif; 
-            margin-bottom: 20px; 
-            flex-shrink: 0;
-        }
-        
+        /* --- Song List --- */
+        .songList { flex-grow: 1; min-height: 0; display: flex; flex-direction: column; }
+        .songList h1 { font-family: 'Ubuntu', sans-serif; margin-bottom: 20px; flex-shrink: 0; }
         .songItemContainer {
-            flex-grow: 1;
-            overflow-y: auto;
-            padding: 0 10px;
-            scrollbar-width: thin;
-            scrollbar-color: var(--glow-color) transparent;
+            flex-grow: 1; overflow-y: auto; padding: 0 10px;
+            scrollbar-width: thin; scrollbar-color: var(--glow-color) transparent;
         }
-        .songItemContainer::-webkit-scrollbar { width: 6px; }
-        .songItemContainer::-webkit-scrollbar-track { background: transparent; }
-        .songItemContainer::-webkit-scrollbar-thumb { background-color: var(--glow-color); border-radius: 20px; }
-
         .songItem {
-            height: 50px;
-            display: flex;
-            align-items: center;
-            margin: 12px 0;
-            padding: 0 10px;
-            border-radius: 50px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid transparent;
-            transition: transform 0.2s ease-out, background-color 0.2s ease, border-color 0.2s ease;
-            cursor: pointer;
+            height: 50px; display: flex; align-items: center; margin: 12px 0; padding: 0 10px;
+            border-radius: 50px; background: rgba(255, 255, 255, 0.05);
+            transition: transform 0.2s ease-out, background-color 0.2s ease; cursor: pointer;
         }
-        .songItem:hover {
-            transform: scale(1.02);
-            background: rgba(168, 85, 247, 0.2);
-            border-color: rgba(168, 85, 247, 0.5);
-        }
-        
-        .songItem img {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            margin-right: 15px;
-            object-fit: cover;
-        }
-        
-        .songName {
-            flex-grow: 1;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            margin-right: 15px;
-        }
-        
-        .song-duration {
-            display: block;
-            padding: 0 15px;
-            color: #b3b3b3;
-            font-size: 0.9rem;
-        }
-        .songlistplay {
-            position: static;
-            opacity: 1;
-            transform: none;
-        }
-        .songlistplay i {
-            cursor: pointer;
-            font-size: 1.5rem;
-            color: rgba(255, 255, 255, 0.8);
-            transition: color 0.2s, transform 0.2s, text-shadow 0.2s;
-            text-shadow: none;
-        }
-        .songlistplay i:hover {
-            color: white;
-            transform: scale(1.2);
-            text-shadow: 0 0 10px var(--glow-color);
-        }
-        
-        /* --- MODERNIZED BOTTOM PLAYER BAR --- */
+        .songItem:hover { transform: scale(1.02); background: rgba(168, 85, 247, 0.2); }
+        .songItem img { width: 40px; height: 40px; border-radius: 50%; margin-right: 15px; object-fit: cover; }
+        .songName { flex-grow: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-right: 15px; }
+        .songlistplay i { font-size: 1.5rem; color: rgba(255, 255, 255, 0.8); }
+
+        /* --- Bottom Player --- */
         .bottom {
-            flex-shrink: 0; width: 100%; height: 95px;
-            background: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            display: flex; flex-direction: column; justify-content: center;
-            padding: 5px 2vw;
-            z-index: 20; /* On top of everything */
-            position: relative; /* Ensure it's above background */
+            flex-shrink: 0; width: 100%; height: 95px; background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(15px); border-top: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex; flex-direction: column; justify-content: center; padding: 5px 2vw;
+            z-index: 20; position: relative;
         }
-        
         .player-core { display: flex; align-items: center; justify-content: space-between; width: 100%;}
         .songInfo { flex: 1; display: flex; align-items: center; gap: 15px; min-width: 0; }
         .songInfo img#currentCoverArt { width: 55px; height: 55px; border-radius: 8px; object-fit: cover; }
         .songInfo .text-details { display: flex; flex-direction: column; overflow: hidden; }
         .songInfo span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        #masterSongName { font-size: 1rem; font-weight: bold; }
-        #masterArtistName { font-size: 0.8rem; color: #b3b3b3; }
-
         .player-controls { flex: 1.5; display: flex; flex-direction: column; align-items: center; gap: 8px; }
         .icons { display: flex; justify-content: center; align-items: center; gap: 20px; }
-        .icons i {
-            cursor: pointer; font-size: 1.1rem; color: #b3b3b3;
-            transition: transform 0.2s, color 0.2s;
-        }
+        .icons i { cursor: pointer; font-size: 1.1rem; color: #b3b3b3; transition: 0.2s; }
         .icons i:hover { color: white; transform: scale(1.1); }
         .icons i#masterPlay { font-size: 2.5rem; color: white; }
-        .icons i#masterPlay:hover { transform: scale(1.05); }
-        
-        /* --- FIXED: Active Icon Color for both Desktop AND Popup --- */
-        .icons i.active-icon, 
-        .popup-controls i.active-icon { 
-            color: var(--glow-color) !important; 
-            text-shadow: 0 0 10px var(--glow-color);
-        }
+        .icons i.active-icon { color: var(--glow-color) !important; text-shadow: 0 0 10px var(--glow-color); }
 
         .progress-container { width: 100%; display: flex; align-items: center; gap: 10px; }
-        #currentTime, #totalDuration { font-size: 0.8rem; color: #b3b3b3; min-width: 40px; text-align: center; }
-        
-        input[type="range"] {
-            -webkit-appearance: none; appearance: none;
-            background: transparent; cursor: pointer;
-        }
-
-        #myProgressBar {
-            width: 100%; height: 5px;
-            background: linear-gradient(to right, var(--spotify-green) 0%, rgba(255, 255, 255, 0.2) 0%);
-            border-radius: 5px; transition: background 0.1s ease-out;
-        }
-
+        #myProgressBar { width: 100%; height: 5px; border-radius: 5px; -webkit-appearance: none; background: #444; }
         .volumeControl { flex: 1; display: flex; justify-content: flex-end; align-items: center; gap: 10px; }
-        .volumeControl i { cursor: pointer; color: #b3b3b3; transition: color 0.2s; }
-        .volumeControl i:hover { color: white; }
-        #volumeSlider {
-            width: 100px; height: 4px;
-            background: linear-gradient(to right, var(--spotify-green) 100%, rgba(255, 255, 255, 0.2) 100%);
-            border-radius: 4px; transition: background 0.1s ease-out;
-        }
-
-        /* --- MOBILE POPUP & SHARE (Hidden on Desktop) --- */
+        
+        /* --- Mobile Popup --- */
         .mobile-player-popup { display: none; }
         .share-overlay { display: none; }
 
-        /* ========================================= */
-        /* === MOBILE RESPONSIVE DESIGN === */
-        /* ========================================= */
         @media (max-width: 900px) {
-            body { 
-                height: 100svh; 
-                /* KEEP OVERFLOW HIDDEN to maintain the "App" feel with internal scrolling */
-                overflow: hidden; 
-            }
-
-            /* 1. RESTORED ORIGINAL LIST STRUCTURE */
-            .main-content-wrapper {
-                flex-direction: column;
-                padding: 0;
-                gap: 0;
-                height: calc(100vh - 65px); /* Nav height */
-                position: relative;
-            }
+            body { height: 100svh; overflow: hidden; }
+            .main-content-wrapper { flex-direction: column; padding: 0; gap: 0; height: calc(100vh - 65px); }
+            .container { flex-basis: auto; width: 90%; margin: 25px auto; padding-bottom: 90px; }
+            .song-banner, .song-duration, .volumeControl { display: none; }
             
-            .container {
-                /* ORIGINAL GLASS BOX STYLE RESTORED */
-                flex-basis: auto;
-                width: 90%;
-                max-width: 900px;
-                margin: 25px auto;
-                flex-grow: 1;
-                flex-shrink: 1;
-                /* IMPORTANT: Padding at bottom so last song isn't hidden by the floating pill */
-                padding-bottom: 90px; 
-            }
-            
-            /* Hide Desktop Elements */
-            .song-banner { display: none; }
-            .song-duration { display: none; }
-            .volumeControl { display: none; }
-            .player-core { justify-content: space-between; }
-            .player-controls { flex: unset; }
-
-            /* --- 2. FLOATING PILL PLAYER (New Feature) --- */
             .bottom {
-                position: fixed; 
-                bottom: 15px; left: 15px; right: 15px; 
-                width: auto; height: 70px;
-                border-radius: 15px; background: rgba(20, 20, 20, 0.95);
-                border: 1px solid rgba(255, 255, 255, 0.15); box-shadow: 0 10px 40px rgba(0,0,0,0.6);
-                padding: 0 20px; z-index: 100;
-                transition: transform 0.3s ease;
+                position: fixed; bottom: 15px; left: 15px; right: 15px; width: auto; height: 70px;
+                border-radius: 15px; background: rgba(20, 20, 20, 0.95); z-index: 100;
+                border: 1px solid rgba(255, 255, 255, 0.15); transition: transform 0.3s ease;
             }
-            .bottom.hidden-mini { transform: translateY(150%); } 
-            
-            .songInfo { flex: 1; max-width: 55%; } /* Reduced slightly to fit icons */
+            .bottom.hidden-mini { transform: translateY(150%); }
+            .songInfo { flex: 1; max-width: 55%; }
             .songInfo img#currentCoverArt { width: 45px; height: 45px; }
             .player-controls { flex: unset; width: auto; flex-direction: row; }
-            .icons { gap: 10px; } /* Reduced gap to fit more icons */
-            
-            /* SHOW ALL CONTROLS in mobile pill as requested */
+            .icons { gap: 10px; }
             #shuffle, #repeat { display: inline-block !important; font-size: 1rem; }
-            #previous, #next { font-size: 1.1rem; }
             #masterPlay { font-size: 1.8rem !important; }
-
-            /* Mini Progress Bar (Top of Pill) */
-            .progress-container { position: absolute; top: 0; left: 0; width: 100%; padding: 0; height: 3px; gap: 0; }
-            #myProgressBar { height: 3px; border-radius: 15px 15px 0 0; touch-action: none; }
+            .progress-container { position: absolute; top: 0; left: 0; width: 100%; height: 3px; gap: 0; }
+            #myProgressBar { height: 3px; border-radius: 15px 15px 0 0; }
             #currentTime, #totalDuration { display: none; }
 
-            /* --- 3. FULL SCREEN POPUP PLAYER ("The Pop") --- */
             .mobile-player-popup {
-                display: flex; flex-direction: column;
-                position: fixed; top: 100%; left: 0; width: 100%; height: 100%;
-                background: linear-gradient(to bottom, #2c2c2c, #000000);
-                z-index: 2000; padding: 30px;
+                display: flex; flex-direction: column; position: fixed; top: 100%; left: 0; width: 100%; height: 100%;
+                background: linear-gradient(to bottom, #2c2c2c, #000000); z-index: 2000; padding: 30px;
                 transition: top 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
             }
-            .mobile-player-popup.active { top: 0; } 
-
-            .popup-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
-            .popup-header i { font-size: 1.5rem; color: #fff; cursor: pointer; }
-            .popup-header span { font-size: 0.9rem; letter-spacing: 1px; text-transform: uppercase; color: #aaa; }
-
-            /* UPDATED POPUP ART for SQUARE IMAGE ON iPHONE */
-            .popup-art {
-                width: 100%;
-                aspect-ratio: 1/1; /* Enforce Square */
-                border-radius: 20px; 
-                overflow: hidden;
-                margin-bottom: 40px; 
-                box-shadow: 0 20px 50px rgba(0,0,0,0.6);
-                position: relative;
-                -webkit-transform: translateZ(0); /* Hardware acceleration fix for iOS */
-            }
-            .popup-art img { 
-                width: 100%; 
-                height: 100%; 
-                object-fit: cover; /* Fills square perfectly */
-                display: block;
-            }
-
-            .popup-info { margin-bottom: 30px; }
-            .popup-info h2 { font-size: 1.8rem; margin-bottom: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-            .popup-info p { font-size: 1.1rem; color: #b3b3b3; }
-
-            .popup-progress { width: 100%; margin-bottom: 30px; }
-            .popup-time { display: flex; justify-content: space-between; margin-top: 10px; font-size: 0.8rem; color: #aaa; }
-            
-            input[type=range].popup-slider {
-                width: 100%; height: 5px; -webkit-appearance: none; background: #444; border-radius: 5px; touch-action: none;
-            }
-            input[type=range].popup-slider::-webkit-slider-thumb {
-                -webkit-appearance: none; height: 15px; width: 15px; border-radius: 50%;
-                background: #fff; cursor: pointer; box-shadow: 0 0 10px rgba(255,255,255,0.5);
-            }
-
-            .popup-controls { display: flex; justify-content: space-between; align-items: center; padding: 0 10px; }
-            .popup-controls i { font-size: 1.5rem; color: #fff; cursor: pointer; }
+            .mobile-player-popup.active { top: 0; }
+            .popup-header { display: flex; justify-content: space-between; margin-bottom: 30px; }
+            .popup-art { width: 100%; aspect-ratio: 1/1; border-radius: 20px; overflow: hidden; margin-bottom: 40px; }
+            .popup-art img { width: 100%; height: 100%; object-fit: cover; }
+            .popup-info h2 { font-size: 1.8rem; margin-bottom: 5px; }
+            .popup-controls { display: flex; justify-content: space-between; align-items: center; }
             .popup-controls i.main-play-btn { font-size: 4rem; color: var(--glow-color); }
-
-            /* --- 4. NEW FEATURE: SHARE OVERLAY (Spotify Style Bottom Sheet) --- */
+            
+            /* --- Share Overlay --- */
             .share-overlay {
-                display: flex;
-                position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-                background: rgba(0, 0, 0, 0.6); z-index: 3000;
-                justify-content: center; align-items: flex-end;
+                display: flex; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+                background: rgba(0, 0, 0, 0.6); z-index: 3000; justify-content: center; align-items: flex-end;
                 opacity: 0; pointer-events: none; transition: opacity 0.3s;
             }
             .share-overlay.active { opacity: 1; pointer-events: auto; }
-
             .share-menu {
                 width: 100%; background: #181818; border-radius: 20px 20px 0 0;
                 padding: 25px; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
-                box-shadow: 0 -5px 30px rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1);
             }
             .share-overlay.active .share-menu { transform: translateY(0); }
-
-            .share-header { display: flex; align-items: center; margin-bottom: 25px; padding-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); }
-            .share-art { width: 50px; height: 50px; border-radius: 5px; margin-right: 15px; object-fit: cover; }
-            .share-details { flex-grow: 1; }
-            .share-details h3 { font-size: 1rem; color: white; margin-bottom: 3px; }
-            .share-details p { font-size: 0.8rem; color: #b3b3b3; }
-            .share-header i { font-size: 1.5rem; color: #aaa; cursor: pointer; padding: 5px; }
-
-            .share-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; text-align: center; }
-            .share-item { display: flex; flex-direction: column; align-items: center; gap: 8px; color: white; text-decoration: none; cursor: pointer; }
-            .share-item span { font-size: 0.75rem; color: #ccc; }
-            .icon-box {
-                width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
-                font-size: 1.5rem; transition: transform 0.2s;
-            }
-            .share-item:hover .icon-box { transform: scale(1.1); }
+            .share-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; text-align: center; margin-top: 20px;}
+            .share-item { display: flex; flex-direction: column; align-items: center; gap: 8px; color: white; cursor: pointer; }
+            .icon-box { width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
             
             .wa { background: #25D366; }
             .ig { background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285AEB 90%); }
@@ -554,7 +230,6 @@
 <body>
     <div class="dynamic-background"></div>
 
-    <!-- HIDDEN CANVAS for generating "Story" images -->
     <canvas id="shareCanvas" width="1080" height="1920" style="display: none;"></canvas>
 
     <nav>
@@ -571,15 +246,12 @@
     </nav>
 
     <div class="main-content-wrapper">
-        <!-- Song List -->
         <div class="container">
             <div class="songList">
                 <h1>Versatility EP - Pratik Karn</h1>
                 <div class="songItemContainer"></div>
             </div>
         </div>
-
-        <!-- Desktop Banner (Hidden on Mobile) -->
         <div class="song-banner">
             <div class="banner-placeholder">
                 <i class="fa-solid fa-music"></i>
@@ -593,7 +265,6 @@
         </div>
     </div>
 
-    <!-- MAIN PLAYER BAR (Desktop: Bottom Bar | Mobile: Floating Pill) -->
     <div class="bottom" id="miniPlayer">
         <div class="player-core">
             <div class="songInfo">
@@ -624,12 +295,10 @@
         </div>
     </div>
 
-    <!-- NEW FEATURE: MOBILE FULL SCREEN POPUP PLAYER -->
     <div class="mobile-player-popup" id="mobilePopup">
         <div class="popup-header">
             <i class="fa-solid fa-chevron-down" id="closePopupBtn"></i>
             <span>Now Playing</span>
-            <!-- Added ID 'openShareBtn' for the Share Feature -->
             <i class="fa-solid fa-ellipsis" id="openShareBtn"></i> 
         </div>
         <div class="popup-art">
@@ -655,7 +324,6 @@
         </div>
     </div>
 
-    <!-- NEW: SHARE SHEET OVERLAY -->
     <div class="share-overlay" id="shareOverlay">
         <div class="share-menu">
             <div class="share-header">
@@ -689,823 +357,247 @@
 
     <script>
     document.addEventListener('DOMContentLoaded', () => {
-        console.log("Welcome to the combined Music Player!");
-
-        // --- CSS Injection for Toast Notifications & UI Enhancements ---
-        const style = document.createElement('style');
-        style.innerHTML = `
-            #toast-container {
-                position: fixed;
-                bottom: 110px; /* Position above the player */
-                left: 50%;
-                transform: translateX(-50%);
-                z-index: 9999;
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                gap: 10px;
-            }
-            .toast {
-                background-color: rgba(18, 18, 18, 0.8);
-                color: #fff;
-                padding: 12px 24px;
-                border-radius: 25px;
-                font-size: 0.9rem;
-                border: 1px solid rgba(255, 255, 255, 0.1);
-                backdrop-filter: blur(10px);
-                -webkit-backdrop-filter: blur(10px);
-                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
-                opacity: 0;
-                transform: translateY(20px);
-                transition: opacity 0.4s ease, transform 0.4s ease;
-            }
-            .toast.show {
-                opacity: 1;
-                transform: translateY(0);
-            }
-            /* FIXED: Ensure parent has relative positioning for the badge */
-            #repeat, #popupRepeat {
-                position: relative;
-            }
-            /* FIXED: REPEAT ONE INDICATOR FOR BOTH DESKTOP AND POPUP */
-            .repeat-one-indicator::after {
-                content: '1';
-                position: absolute;
-                top: -5px;
-                right: -6px;
-                background-color: var(--glow-color, #a855f7);
-                color: white;
-                border-radius: 50%;
-                width: 14px;
-                height: 14px;
-                font-size: 9px;
-                font-weight: bold;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                line-height: 1;
-                box-shadow: 0 2px 5px rgba(0,0,0,0.5);
-            }
-        `;
-        document.head.appendChild(style);
-
-        const toastContainer = document.createElement('div');
-        toastContainer.id = 'toast-container';
-        document.body.appendChild(toastContainer);
-
-        // --- STATE & VARIABLES ---
+        // --- CORE PLAYER VARIABLES ---
         let songIndex = 0;
         let isShuffled = false;
-        let repeatMode = 0; // 0: no repeat, 1: repeat playlist, 2: repeat one
-        let lastVolume = 1;
+        let repeatMode = 0; 
         let audioElement = new Audio();
         let isSeeking = false;
+        const songs = [
+            { songName: "Bewafa", artistName: "Pratik karn", filePath: "song/1.mp3", coverPath: "covers/1.jpg" },
+            { songName: "Yaadein Teri", artistName: "Pratik karn", filePath: "song/2.mp3", coverPath: "covers/2.jpg" },
+            { songName: "DEAF KEV", artistName: "Invincible", filePath: "song/3.mp3", coverPath: "covers/3.jpg" },
+            { songName: "Different Heaven", artistName: "My Heart", filePath: "song/4.mp3", coverPath: "covers/4.jpg" },
+            { songName: "Janji-Heroes", artistName: "Tonight", filePath: "song/5.mp3", coverPath: "covers/5.jpg" },
+            { songName: "Rabba", artistName: "Ehsaan", filePath: "song/6.mp3", coverPath: "covers/6.jpg" },
+            { songName: "Sakhiyaan", artistName: "Maninder Buttar", filePath: "song/7.mp3", coverPath: "covers/7.jpg" },
+            { songName: "Bhula Dena", artistName: "Mustafa Zahid", filePath: "song/8.mp3", coverPath: "covers/8.jpg" },
+        ];
 
-        // --- DOM ELEMENTS (SHARED) ---
+        // --- DOM REFERENCES ---
         const masterPlay = document.getElementById('masterPlay');
         const myProgressBar = document.getElementById('myProgressBar');
         const nextBtn = document.getElementById('next');
         const prevBtn = document.getElementById('previous');
         const shuffleBtn = document.getElementById('shuffle');
         const repeatBtn = document.getElementById('repeat');
-        const volumeSlider = document.getElementById('volumeSlider');
-        const volumeIcon = document.getElementById('volumeIcon');
-        
-        const masterSongName = document.getElementById('masterSongName');
-        const masterArtistName = document.getElementById('masterArtistName');
-        const currentCoverArt = document.getElementById('currentCoverArt');
-        const currentTimeSpan = document.getElementById('currentTime');
-        const totalDurationSpan = document.getElementById('totalDuration');
-        const songItemContainer = document.querySelector('.songItemContainer');
-
-        // --- DOM ELEMENTS (MOBILE POPUP SPECIFIC) ---
-        const miniPlayer = document.getElementById('miniPlayer');
-        const mobilePopup = document.getElementById('mobilePopup');
-        const closePopupBtn = document.getElementById('closePopupBtn');
-        const popupCoverArt = document.getElementById('popupCoverArt');
-        const popupSongName = document.getElementById('popupSongName');
-        const popupArtistName = document.getElementById('popupArtistName');
-        const popupProgressBar = document.getElementById('popupProgressBar');
-        const popupCurrentTime = document.getElementById('popupCurrentTime');
-        const popupTotalDuration = document.getElementById('popupTotalDuration');
         const popupPlay = document.getElementById('popupPlay');
-        const popupPrev = document.getElementById('popupPrev');
         const popupNext = document.getElementById('popupNext');
+        const popupPrev = document.getElementById('popupPrev');
         const popupShuffle = document.getElementById('popupShuffle');
         const popupRepeat = document.getElementById('popupRepeat');
-
-        // --- DOM ELEMENTS (SHARE FEATURE) ---
-        const openShareBtn = document.getElementById('openShareBtn');
-        const closeShareBtn = document.getElementById('closeShareBtn');
-        const shareOverlay = document.getElementById('shareOverlay');
-        const shareArt = document.getElementById('shareArt');
-        const shareSong = document.getElementById('shareSong');
-        const shareArtist = document.getElementById('shareArtist');
-        const shareWhatsapp = document.getElementById('shareWhatsapp');
-        const shareInsta = document.getElementById('shareInsta');
-        const shareSnap = document.getElementById('shareSnap');
-        const shareCopy = document.getElementById('shareCopy');
         const shareCanvas = document.getElementById('shareCanvas');
 
-        // --- NEW BANNER & BACKGROUND ELEMENTS ---
-        const dynamicBackground = document.querySelector('.dynamic-background');
-        const bannerCoverArt = document.getElementById('bannerCoverArt');
-        const bannerSongName = document.getElementById('bannerSongName');
-        const bannerArtistName = document.getElementById('bannerArtistName');
-
-        // --- SONG DATA ---
-        const songs = [
-        { songName: "Bewafa", artistName: "Pratik karn", filePath: "song/1.mp3", coverPath: "covers/1.jpg" },
-        { songName: "Yaadein Teri", artistName: "Pratik karn", filePath: "song/2.mp3", coverPath: "covers/2.jpg" },
-        { songName: "DEAF KEV", artistName: "Invincible", filePath: "song/3.mp3", coverPath: "covers/3.jpg" },
-        { songName: "Different Heaven", artistName: "My Heart", filePath: "song/4.mp3", coverPath: "covers/4.jpg" },
-        { songName: "Janji-Heroes", artistName: "Tonight", filePath: "song/5.mp3", coverPath: "covers/5.jpg" },
-        { songName: "Rabba", artistName: "Ehsaan", filePath: "song/6.mp3", coverPath: "covers/6.jpg" },
-        { songName: "Sakhiyaan", artistName: "Maninder Buttar", filePath: "song/7.mp3", coverPath: "covers/7.jpg" },
-        { songName: "Bhula Dena", artistName: "Mustafa Zahid", filePath: "song/8.mp3", coverPath: "covers/8.jpg" },
-        ];
-
-        // --- Media Session API Function (UPDATED FOR LOCK SCREEN PROGRESS) ---
-        const updateMediaSession = () => {
-            if ('mediaSession' in navigator) {
-                const song = songs[songIndex];
-                navigator.mediaSession.metadata = new MediaMetadata({
-                    title: song.songName,
-                    artist: song.artistName,
-                    album: 'Mint Music Player',
-                    artwork: [
-                        // FIXED: Resolve relative paths to absolute URLs
-                        { src: new URL(song.coverPath, document.baseURI).href, sizes: '96x96', type: 'image/jpeg' },
-                        { src: new URL(song.coverPath, document.baseURI).href, sizes: '128x128', type: 'image/jpeg' },
-                        { src: new URL(song.coverPath, document.baseURI).href, sizes: '192x192', type: 'image/jpeg' },
-                        { src: new URL(song.coverPath, document.baseURI).href, sizes: '256x256', type: 'image/jpeg' },
-                        { src: new URL(song.coverPath, document.baseURI).href, sizes: '384x384', type: 'image/jpeg' },
-                        { src: new URL(song.coverPath, document.baseURI).href, sizes: '512x512', type: 'image/jpeg' },
-                    ]
-                });
-                updatePositionState(); // Initial state
-            }
-        };
-
-        // FIXED: Helper function to update position state for lock screen
-        const updatePositionState = () => {
-            if ('mediaSession' in navigator && audioElement.duration && !isNaN(audioElement.duration)) {
-                try {
-                    navigator.mediaSession.setPositionState({
-                        duration: audioElement.duration,
-                        playbackRate: audioElement.playbackRate,
-                        position: audioElement.currentTime
-                    });
-                } catch (error) {
-                    console.error("Position state error:", error);
-                }
-            }
-        };
-
-        // --- CORE PLAYER FUNCTIONS ---
+        // --- PLAYER FUNCTIONS ---
         const loadSong = (index, autoPlay = true) => {
             songIndex = index;
             const song = songs[songIndex];
             audioElement.src = song.filePath;
-
-            // --- SET DYNAMIC BACKGROUND (NEW) ---
-            if (dynamicBackground) {
-                dynamicBackground.style.backgroundImage = `url(${song.coverPath})`;
-            }
-
-            // Update bottom player (Shared)
-            masterSongName && (masterSongName.innerText = song.songName);
-            if (masterArtistName) masterArtistName.innerText = song.artistName;
-            if (currentCoverArt) currentCoverArt.src = song.coverPath;
-
-            // Update the big banner's content
-            if (bannerCoverArt) bannerCoverArt.src = song.coverPath;
-            if (bannerSongName) bannerSongName.innerText = song.songName;
-            if (bannerArtistName) bannerArtistName.innerText = song.artistName;
-
-            // Update Mobile Popup
-            if (popupCoverArt) popupCoverArt.src = song.coverPath;
-            if (popupSongName) popupSongName.innerText = song.songName;
-            if (popupArtistName) popupArtistName.innerText = song.artistName;
-
-            // Update Share Sheet
-            if (shareArt) shareArt.src = song.coverPath;
-            if (shareSong) shareSong.innerText = song.songName;
-            if (shareArtist) shareArtist.innerText = song.artistName;
+            
+            // Update Text & Images
+            document.querySelectorAll('#masterSongName, #popupSongName, #bannerSongName, #shareSong').forEach(el => el.innerText = song.songName);
+            document.querySelectorAll('#masterArtistName, #popupArtistName, #bannerArtistName, #shareArtist').forEach(el => el.innerText = song.artistName);
+            document.querySelectorAll('#currentCoverArt, #popupCoverArt, #bannerCoverArt, #shareArt').forEach(el => el.src = song.coverPath);
+            
+            const dynamicBackground = document.querySelector('.dynamic-background');
+            if(dynamicBackground) dynamicBackground.style.backgroundImage = `url(${song.coverPath})`;
 
             audioElement.currentTime = 0;
-
-            if (myProgressBar) {
-                myProgressBar.max = 100;
-                myProgressBar.value = 0;
-                myProgressBar.style.background = `linear-gradient(to right, var(--spotify-green) 0%, rgba(255, 255, 255, 0.2) 0%)`;
-            }
-
-            updateMediaSession();
-
-            if (autoPlay) {
-                showToast(`Playing: ${song.songName}`);
-                playSong();
-            } else {
-                audioElement.addEventListener('loadedmetadata', () => {
-                    totalDurationSpan && (totalDurationSpan.innerText = formatTime(audioElement.duration));
-                    if (myProgressBar) {
-                        myProgressBar.value = 0;
-                        myProgressBar.style.background = `linear-gradient(to right, var(--spotify-green) 0%, rgba(255, 255, 255, 0.2) 0%)`;
-                    }
-                    updatePositionState(); // Update lock screen duration
-                }, { once: true });
-                updateUI();
-            }
+            if (autoPlay) playSong();
+            updateUI();
         };
 
         const playSong = () => {
             audioElement.play().then(() => {
-                updatePositionState(); // Update lock screen
-            }).catch(error => {
-                console.error("Playback failed:", error);
-                updateUI();
-            });
+                document.body.classList.add('now-playing-active');
+                if(window.innerWidth <= 900) openMobilePopup();
+            }).catch(e => console.log(e));
             updateUI();
-            
-            // --- This class now fades in the banner content ---
-            document.body.classList.add('now-playing-active');
-
-            // Auto-open Popup on Mobile
-            if(window.innerWidth <= 900) {
-                openMobilePopup();
-            }
-
-            if ('mediaSession' in navigator) {
-                navigator.mediaSession.playbackState = 'playing';
-            }
         };
-
         const pauseSong = () => {
             audioElement.pause();
+            document.body.classList.remove('now-playing-active');
             updateUI();
-            updatePositionState(); // Update lock screen
-            
-            // --- This class now fades out the banner content ---
-            document.body.classList.remove('now-playing-active'); 
-
-            if ('mediaSession' in navigator) {
-                navigator.mediaSession.playbackState = 'paused';
-            }
         };
-
+        const togglePlay = () => audioElement.paused ? playSong() : pauseSong();
+        
         const nextSong = () => {
             if (isShuffled) {
                 let nextIndex;
-                do {
-                    nextIndex = Math.floor(Math.random() * songs.length);
-                } while (songs.length > 1 && nextIndex === songIndex);
+                do { nextIndex = Math.floor(Math.random() * songs.length); } while (songs.length > 1 && nextIndex === songIndex);
                 songIndex = nextIndex;
             } else {
                 songIndex = (songIndex + 1) % songs.length;
             }
             loadSong(songIndex);
         };
-
         const prevSong = () => {
             songIndex = (songIndex - 1 + songs.length) % songs.length;
             loadSong(songIndex);
         };
 
-        const togglePlay = () => audioElement.paused ? playSong() : pauseSong();
+        const updateUI = () => {
+            const isPlaying = !audioElement.paused && !audioElement.ended;
+            const playClass = isPlaying ? 'fa-regular fa-circle-pause' : 'fa-regular fa-circle-play';
+            const popupClass = isPlaying ? 'fa-solid fa-circle-pause main-play-btn' : 'fa-solid fa-circle-play main-play-btn';
+            if (masterPlay) masterPlay.className = playClass;
+            if (popupPlay) popupPlay.className = popupClass;
+        };
 
-        // --- MOBILE POPUP LOGIC ---
+        // --- EVENT LISTENERS ---
+        masterPlay.addEventListener('click', togglePlay);
+        popupPlay.addEventListener('click', togglePlay);
+        nextBtn.addEventListener('click', nextSong);
+        popupNext.addEventListener('click', nextSong);
+        prevBtn.addEventListener('click', prevSong);
+        popupPrev.addEventListener('click', prevSong);
+        audioElement.addEventListener('ended', nextSong);
+
+        // --- MOBILE POPUP ---
         const openMobilePopup = () => {
-            if(window.innerWidth <= 900) {
-                mobilePopup.classList.add('active');
-                miniPlayer.classList.add('hidden-mini'); // Hide the pill behind
-            }
+            document.getElementById('mobilePopup').classList.add('active');
+            document.getElementById('miniPlayer').classList.add('hidden-mini');
         };
-        const closeMobilePopup = () => {
-            mobilePopup.classList.remove('active');
-            miniPlayer.classList.remove('hidden-mini'); // Show the pill
-        };
+        document.getElementById('closePopupBtn').addEventListener('click', () => {
+            document.getElementById('mobilePopup').classList.remove('active');
+            document.getElementById('miniPlayer').classList.remove('hidden-mini');
+        });
+        document.getElementById('miniPlayer').addEventListener('click', (e) => {
+            if(!e.target.closest('.icons')) openMobilePopup();
+        });
 
-        // --- SHARE MENU LOGIC (NEW) ---
-        const openShareMenu = () => {
-            if(shareOverlay) shareOverlay.classList.add('active');
-        };
-        const closeShareMenu = () => {
-            if(shareOverlay) shareOverlay.classList.remove('active');
-        };
-
-        // Share Button Listener
-        if(openShareBtn) openShareBtn.addEventListener('click', openShareMenu);
-        if(closeShareBtn) closeShareBtn.addEventListener('click', closeShareMenu);
-        if(shareOverlay) {
-            shareOverlay.addEventListener('click', (e) => {
-                if (e.target === shareOverlay) closeShareMenu();
-            });
-        }
-
-        // --- SHARE DEEP LINK LOGIC (FIXED) ---
-        const getShareUrl = () => {
-            return `https://dropmint.online?song=${songIndex}`;
-        }
-        
-        const getShareText = () => `Listen to ${songs[songIndex].songName} by ${songs[songIndex].artistName} on Mint Music!`;
-
-        // --- NEW: GENERATE SHARE CARD IMAGE (SPOTIFY STYLE) ---
+        // --- CANVAS GENERATION (The "Graphic Designer") ---
         const drawShareImage = (song, callback) => {
             const ctx = shareCanvas.getContext('2d');
             const img = new Image();
-            // img.crossOrigin = "Anonymous"; // REMOVED for iPhone local compatibility
-            img.src = song.coverPath;
+            img.src = song.coverPath; // Ensure this is a local path or CORS enabled URL
             
             img.onload = () => {
-                // 1. Background - Blurred version of album art or dominant color
-                // Since blurring on canvas is expensive, we simulate a Spotify-like gradient background
+                // 1. Draw Background
                 const grd = ctx.createLinearGradient(0, 0, 0, 1920);
-                // Dark gradient
                 grd.addColorStop(0, "#2b2b2b"); 
                 grd.addColorStop(1, "#000000");
                 ctx.fillStyle = grd;
                 ctx.fillRect(0, 0, 1080, 1920);
 
-                // Draw original image really big and blurry for effect? 
-                // Simpler: Draw blurred background using filter (supported in modern browsers)
+                // 2. Draw Blurry Background Image
                 ctx.save();
                 ctx.filter = 'blur(40px) brightness(0.6)';
-                ctx.drawImage(img, -200, -200, 1480, 2320); // Fill canvas with zoomed version
+                ctx.drawImage(img, -200, -200, 1480, 2320); 
                 ctx.restore();
 
-                // 2. The Card Container
-                // Spotify card style: Rounded rectangle in center
-                const cardX = 140;
-                const cardY = 400;
-                const cardW = 800;
-                const cardH = 1100; // Taller to fit text
-                const radius = 40;
-
-                ctx.fillStyle = "rgba(30, 30, 30, 0.9)"; // Dark card background
-                // Draw Rounded Rect manually or simple rect for now (supported widely)
+                // 3. Draw The Card
+                const cardX = 140, cardY = 400, cardW = 800, cardH = 1100;
+                ctx.fillStyle = "rgba(30, 30, 30, 0.9)";
                 ctx.beginPath();
-                ctx.roundRect(cardX, cardY, cardW, cardH, radius);
+                ctx.roundRect(cardX, cardY, cardW, cardH, 40);
                 ctx.fill();
-                
-                // Shadow for image
-                ctx.shadowColor = "rgba(0,0,0,0.5)";
-                ctx.shadowBlur = 50;
-                
-                // 3. Album Art inside Card
-                // Center inside card: Card Width 800. Image 700x700?
+
+                // 4. Draw Album Art
                 const artSize = 700;
-                const artX = cardX + (cardW - artSize) / 2; // Centered
-                const artY = cardY + 50; // Padding top
-                ctx.drawImage(img, artX, artY, artSize, artSize);
-                ctx.shadowBlur = 0; // Reset shadow
+                ctx.drawImage(img, cardX + 50, cardY + 50, artSize, artSize);
 
-                // 4. Text Content
-                ctx.textAlign = "left"; // Align left like Spotify
+                // 5. Draw Text
                 ctx.fillStyle = "white";
-                
-                const textX = artX; // Align with image left
-                let textY = artY + artSize + 100;
-
-                // Title
                 ctx.font = "bold 60px Ubuntu";
-                ctx.fillText(song.songName, textX, textY);
+                ctx.fillText(song.songName, cardX + 50, cardY + artSize + 120);
                 
-                // Artist
-                textY += 80;
-                ctx.font = "40px Varela Round";
                 ctx.fillStyle = "#b3b3b3";
-                ctx.fillText(song.artistName, textX, textY);
+                ctx.font = "40px Varela Round";
+                ctx.fillText(song.artistName, cardX + 50, cardY + artSize + 200);
 
-                // Branding Logo/Text
-                // Bottom left of card
-                const logoY = cardY + cardH - 50;
+                // 6. Draw "Mint Music" Logo
+                ctx.fillStyle = "#1DB954";
                 ctx.font = "bold 30px Ubuntu";
-                ctx.fillStyle = "#1DB954"; // Mint Green
-                ctx.fillText("Mint Music", textX, logoY);
-                
-                // Draw "Spotify >" Style Link Chip Visual
-                const pillW = 400;
-                const pillH = 80;
-                const pillX = cardX + (cardW - pillW) / 2;
-                const pillY = logoY + 40; // below branding? Or separate element?
-                
-                // Let's put the pill at bottom of SCREEN (outside card) or inside card bottom right?
-                // The screenshot shows it outside card. Let's put it inside card for simplicity as single image
-                
-                // Link Text (Visual only)
-                ctx.textAlign = "right";
-                ctx.fillStyle = "#888";
-                ctx.font = "25px Varela Round";
-                // Visual Link Pill Background
-                ctx.beginPath();
-                ctx.fillStyle = "rgba(255,255,255,0.1)";
-                ctx.roundRect(cardX + cardW - 350, logoY - 40, 330, 60, 30);
-                ctx.fill();
-                
-                ctx.fillStyle = "white";
-                ctx.textAlign = "center";
-                ctx.font = "bold 25px Ubuntu";
-                ctx.fillText("🔗 Play on Mint Music", cardX + cardW - 185, logoY);
+                ctx.fillText("Mint Music", cardX + 50, cardY + cardH - 50);
 
-
-                // Convert to Blob
-                shareCanvas.toBlob((blob) => {
-                    callback(blob);
-                }, 'image/png');
+                // 7. Return Data URL (Base64)
+                const dataUrl = shareCanvas.toDataURL('image/png');
+                callback(dataUrl);
             };
         };
 
-        // FIXED: Robust Share Handler with Image
-        const handleShare = async (platform) => {
-            const url = getShareUrl();
-            const text = getShareText();
+        // --- SHARE LOGIC (The "Handshake") ---
+        const handleShare = (platform) => {
             const currentSong = songs[songIndex];
-
-            // Handle specific apps that need image generation (Snapchat/Insta)
-            // Note: Web Share API level 2 supports files. 
-            if (platform === 'instagram' || platform === 'snapchat') {
-                showToast("Generating Story Card...");
+            const deepLink = `https://dropmint.online?song=${songIndex}`;
+            
+            if (platform === 'snapchat') {
+                showToast("Opening Snapchat...");
                 
-                // 1. Copy Link FIRST (So user can paste in Snapchat/Insta)
-                try { await navigator.clipboard.writeText(url); } catch(e) {}
-
-                drawShareImage(currentSong, async (blob) => {
-                    if (blob && navigator.share) {
-                        const file = new File([blob], 'song_card.png', { type: 'image/png' });
-                        try {
-                            // Attempt to share File + URL + Text
-                            // Note: Sending file ONLY is crucial for some OS to trigger Story mode
-                            // BUT we also want the link attached if supported.
-                            const shareData = {
-                                files: [file],
-                                // url: url // Often breaks Story mode on iOS, but required for "Attachment"
-                            };
-                            // Try adding URL, if fails, fallback to file only? 
-                            // No, better to rely on clipboard for reliable Story mode.
-                            
-                            await navigator.share(shareData);
-                            closeShareMenu();
-                        } catch (err) {
-                            console.log("Share failed", err);
-                            // Fallback to just opening the app if share fails
-                            if(platform === 'instagram') window.location.href = 'instagram://story-camera';
-                            if(platform === 'snapchat') window.location.href = 'snapchat://creative-kit';
-                        }
+                // 1. Generate the Sticker
+                drawShareImage(currentSong, (dataUrl) => {
+                    
+                    // 2. The Creative Kit "Handshake"
+                    // This command tells the Snap SDK: "Take this image, go to Camera, and attach this link."
+                    if (window.snap && window.snap.creativekit) {
+                        snap.creativekit.share({
+                          shareData: {
+                            sticker: {
+                              src: dataUrl, // The generated Base64 image
+                              metadata: {
+                                type: "SNAP_IMAGE",
+                                position: "center", // Place sticker in center
+                                scale: 1 // Default size
+                              }
+                            },
+                            attachmentUrl: deepLink // The link attached to the Snap
+                          }
+                        });
+                        document.getElementById('shareOverlay').classList.remove('active');
                     } else {
-                        // Fallback if sharing files isn't supported
-                        showToast("Link copied! Opening App...");
-                        setTimeout(() => {
-                            if(platform === 'instagram') window.location.href = 'instagram://story-camera';
-                            if(platform === 'snapchat') window.location.href = 'snapchat://creative-kit';
-                        }, 1000);
-                        closeShareMenu();
+                        showToast("Snapchat SDK not loaded!");
                     }
                 });
-                return;
+            } 
+            else if (platform === 'whatsapp') {
+                window.location.href = `https://wa.me/?text=${encodeURIComponent("Listen to " + currentSong.songName + " " + deepLink)}`;
             }
-
-            // 2. Fallback logic for others
-            if (platform === 'whatsapp') {
-                // Universal link for WA
-                window.location.href = `https://wa.me/?text=${encodeURIComponent(text + ' ' + url)}`;
-            } else if (platform === 'copy') {
-                navigator.clipboard.writeText(url).then(() => {
-                    showToast("Link copied to clipboard!");
-                });
+            else if (platform === 'copy') {
+                navigator.clipboard.writeText(deepLink).then(() => showToast("Link Copied!"));
             }
-            closeShareMenu();
         };
 
-        if(shareWhatsapp) shareWhatsapp.addEventListener('click', () => handleShare('whatsapp'));
-        if(shareCopy) shareCopy.addEventListener('click', () => handleShare('copy'));
+        // --- BIND SHARE BUTTONS ---
+        document.getElementById('openShareBtn').addEventListener('click', () => {
+            document.getElementById('shareOverlay').classList.add('active');
+        });
+        document.getElementById('closeShareBtn').addEventListener('click', () => {
+            document.getElementById('shareOverlay').classList.remove('active');
+        });
+        document.getElementById('shareSnap').addEventListener('click', () => handleShare('snapchat'));
+        document.getElementById('shareWhatsapp').addEventListener('click', () => handleShare('whatsapp'));
+        document.getElementById('shareCopy').addEventListener('click', () => handleShare('copy'));
+
+        // Toast Helper
+        const showToast = (msg) => {
+            // (Simple alert for brevity, or your custom toast logic)
+            alert(msg);
+        };
+
+        // Initialize
+        loadSong(0, false);
         
-        // For Insta/Snap, try to generate image and share
-        if(shareInsta) shareInsta.addEventListener('click', () => handleShare('instagram'));
-        if(shareSnap) shareSnap.addEventListener('click', () => handleShare('snapchat'));
-
-
-        // --- UI & UTILITY FUNCTIONS ---
-        const showToast = (message) => {
-            const toast = document.createElement('div');
-            toast.className = 'toast';
-            toast.textContent = message;
-            toastContainer.appendChild(toast);
-            setTimeout(() => { toast.classList.add('show'); }, 10);
-            setTimeout(() => {
-                toast.classList.remove('show');
-                toast.addEventListener('transitionend', () => { toast.remove(); });
-            }, 3000);
-        };
-
-        const formatTime = (seconds) => {
-            if (isNaN(seconds) || seconds < 0) return "00:00";
-            const minutes = Math.floor(seconds / 60);
-            const remainingSeconds = Math.floor(seconds % 60);
-            return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
-        };
-
-        const updateUI = () => {
-            const isPlaying = !audioElement.paused && !audioElement.ended;
-            
-            // Update Mini/Desktop Button
-            if (masterPlay) {
-                masterPlay.className = isPlaying ? 'fa-regular fa-circle-pause' : 'fa-regular fa-circle-play';
-            }
-            // Update Popup Button
-            if (popupPlay) {
-                popupPlay.className = isPlaying ? 'fa-solid fa-circle-pause main-play-btn' : 'fa-solid fa-circle-play main-play-btn';
-            }
-            
-            document.querySelectorAll('.songItemPlay').forEach((icon, index) => {
-                const isCurrentSong = (index === songIndex);
-                if (isCurrentSong) {
-                    icon.className = isPlaying ? 'fa-regular fa-circle-pause songItemPlay' : 'fa-regular fa-circle-play songItemPlay';
-                } else {
-                    icon.className = 'fa-regular fa-circle-play songItemPlay';
-                }
-            });
-
-            // FIXED: Sync Active State for Shuffle
-            if (shuffleBtn) shuffleBtn.classList.toggle('active-icon', isShuffled);
-            if (popupShuffle) popupShuffle.classList.toggle('active-icon', isShuffled);
-
-            // FIXED: Sync Active State for Repeat
-            if (repeatBtn) {
-                repeatBtn.classList.toggle('active-icon', repeatMode !== 0);
-                repeatBtn.classList.toggle('repeat-one-indicator', repeatMode === 2);
-            }
-            if (popupRepeat) {
-                popupRepeat.classList.toggle('active-icon', repeatMode !== 0);
-                popupRepeat.classList.toggle('repeat-one-indicator', repeatMode === 2);
-            }
-        };
-
-        const populateSongList = () => {
-            if (!songItemContainer) return;
-            songItemContainer.innerHTML = '';
-            songs.forEach((song, i) => {
-                songItemContainer.innerHTML += `
-                    <div class="songItem" data-index="${i}">
-                        <img src="${song.coverPath}" alt="${song.songName}">
-                        <span class="songName">${song.songName}</span>
-                        <span class="song-duration" id="duration-${i}">00:00</span>
-                        <span class="songlistplay">
-                            <i class="fa-regular songItemPlay fa-circle-play"></i>
-                        </span>
-                    </div>`;
-            });
-        };
-
-        const fetchAndDisplayDurations = () => {
-            songs.forEach((song, i) => {
-                const tempAudio = new Audio();
-                tempAudio.preload = 'metadata';
-                tempAudio.src = song.filePath;
-                tempAudio.addEventListener('loadedmetadata', () => {
-                    const durationSpan = document.getElementById(`duration-${i}`);
-                    if (durationSpan) {
-                        durationSpan.innerText = formatTime(tempAudio.duration);
-                    }
-                    try { tempAudio.src = ''; } catch (err) {}
-                }, { once: true });
-            });
-        };
-
-        // --- PROGRESS BAR ---
-        if (myProgressBar) {
-            myProgressBar.max = 100;
-        }
-        
-        const handleSeekStart = () => { isSeeking = true; };
-        const handleSeekEnd = () => { isSeeking = false; };
-
-        if (myProgressBar) {
-            myProgressBar.addEventListener('pointerdown', handleSeekStart);
-            myProgressBar.addEventListener('pointerup', handleSeekEnd);
-            myProgressBar.addEventListener('pointercancel', handleSeekEnd);
-        }
-        if (popupProgressBar) {
-            popupProgressBar.addEventListener('pointerdown', handleSeekStart);
-            popupProgressBar.addEventListener('pointerup', handleSeekEnd);
-            popupProgressBar.addEventListener('pointercancel', handleSeekEnd);
-        }
-        document.addEventListener('pointerup', handleSeekEnd);
-
-        // --- EVENT LISTENERS ---
-        
-        // Playback Controls
-        if (masterPlay) masterPlay.addEventListener('click', togglePlay);
-        if (popupPlay) popupPlay.addEventListener('click', togglePlay);
-        if (nextBtn) nextBtn.addEventListener('click', nextSong);
-        if (popupNext) popupNext.addEventListener('click', nextSong);
-        if (prevBtn) prevBtn.addEventListener('click', prevSong);
-        if (popupPrev) popupPrev.addEventListener('click', prevSong);
-
-        // Mobile Interactions
-        if (miniPlayer) {
-            miniPlayer.addEventListener('click', (e) => {
-                // If clicking the controls inside mini player, don't open popup immediately
-                if(e.target.closest('.icons')) return;
-                openMobilePopup();
-            });
-        }
-        if (closePopupBtn) closePopupBtn.addEventListener('click', closeMobilePopup);
-
-
-        // Audio Time Update
-        audioElement.addEventListener('timeupdate', () => {
-            if (!audioElement.duration) return;
-            
-            // Sync Desktop/Mini Time
-            currentTimeSpan && (currentTimeSpan.innerText = formatTime(audioElement.currentTime));
-            
-            // Sync Popup Time
-            if(popupCurrentTime) popupCurrentTime.innerText = formatTime(audioElement.currentTime);
-            if(popupTotalDuration) popupTotalDuration.innerText = formatTime(audioElement.duration);
-
-            if (!isSeeking) {
-                const progressValue = (audioElement.currentTime / audioElement.duration) * 100;
-                
-                // Update Desktop/Mini Bar
-                if (myProgressBar) {
-                    myProgressBar.value = progressValue;
-                    myProgressBar.style.background = `linear-gradient(to right, var(--spotify-green) ${progressValue}%, rgba(255, 255, 255, 0.2) ${progressValue}%)`;
-                }
-
-                // Update Popup Bar
-                if (popupProgressBar) {
-                    popupProgressBar.value = progressValue;
-                    popupProgressBar.style.background = `linear-gradient(to right, var(--spotify-green) ${progressValue}%, rgba(255, 255, 255, 0.2) ${progressValue}%)`;
-                }
-            }
+        // Populate Song List
+        const list = document.querySelector('.songItemContainer');
+        songs.forEach((song, i) => {
+            list.innerHTML += `<div class="songItem" onclick="loadSong(${i})">
+                <img src="${song.coverPath}">
+                <span class="songName">${song.songName}</span>
+            </div>`;
         });
-
-        audioElement.addEventListener('loadedmetadata', () => {
-            totalDurationSpan && (totalDurationSpan.innerText = formatTime(audioElement.duration));
-            updatePositionState();
-        });
-
-        // Seek functionality
-        const seek = (val) => {
-            if (!audioElement.duration) return;
-            audioElement.currentTime = (val / 100) * audioElement.duration;
-            updatePositionState(); // Update lock screen
-            
-            // Update UI immediately
-            const percent = val;
-            const color = `linear-gradient(to right, var(--spotify-green) ${percent}%, rgba(255, 255, 255, 0.2) ${percent}%)`;
-            
-            if (myProgressBar) {
-                myProgressBar.value = val;
-                myProgressBar.style.background = color;
-            }
-            if (popupProgressBar) {
-                popupProgressBar.value = val;
-                popupProgressBar.style.background = color;
-            }
-        };
-
-        if (myProgressBar) {
-            myProgressBar.addEventListener('input', (e) => seek(e.target.value));
-        }
-        if (popupProgressBar) {
-            popupProgressBar.addEventListener('input', (e) => seek(e.target.value));
-        }
-
-
-        audioElement.addEventListener('ended', () => {
-            if (repeatMode === 2) {
-                loadSong(songIndex);
-            } else if (repeatMode === 1 || isShuffled) {
-                nextSong();
-            } else if (songIndex < songs.length - 1) {
-                nextSong();
-            } else {
-                pauseSong(); // This will fade out the banner content
-            }
-        });
-
-        // Shuffle & Repeat (Shared)
-        const toggleShuffle = () => {
-            isShuffled = !isShuffled;
-            showToast(isShuffled ? "Shuffle On" : "Shuffle Off");
-            updateUI(); // Update UI will handle icons
-        };
-        shuffleBtn && shuffleBtn.addEventListener('click', toggleShuffle);
-        popupShuffle && popupShuffle.addEventListener('click', toggleShuffle);
-
-        const toggleRepeat = () => {
-            repeatMode = (repeatMode + 1) % 3;
-            switch (repeatMode) {
-                case 0: showToast("Repeat Off"); break;
-                case 1: showToast("Repeat Playlist"); break;
-                case 2: showToast("Repeat Song"); break;
-            }
-            updateUI(); // Update UI will handle icons
-        };
-        repeatBtn && repeatBtn.addEventListener('click', toggleRepeat);
-        popupRepeat && popupRepeat.addEventListener('click', toggleRepeat);
-
-
-        // Song List Click Handling (Event Delegation)
-        songItemContainer && songItemContainer.addEventListener('click', (e) => {
-            const targetItem = e.target.closest('.songItem');
-            if (targetItem) {
-                const index = parseInt(targetItem.dataset.index, 10);
-                if (songIndex === index && !audioElement.paused) {
-                    pauseSong();
-                } else {
-                    loadSong(index); // This will call playSong()
-                }
-            }
-        });
-
-        // volume controls
-        if (volumeSlider) {
-            volumeSlider.addEventListener('input', (e) => {
-                const val = Number(e.target.value);
-                audioElement.volume = val;
-                const volumePercentage = val * 100;
-                volumeSlider.style.background = `linear-gradient(to right, var(--spotify-green) ${volumePercentage}%, rgba(255, 255, 255, 0.2) ${volumePercentage}%)`;
-                if (volumeIcon) {
-                    if (val > 0.5) volumeIcon.className = "fa-solid fa-volume-high";
-                    else if (val > 0) volumeIcon.className = "fa-solid fa-volume-low";
-                    else volumeIcon.className = "fa-solid fa-volume-xmark";
-                }
-            });
-        }
-
-        if (volumeIcon) {
-            volumeIcon.addEventListener('click', () => {
-                if (audioElement.volume > 0) {
-                    lastVolume = audioElement.volume;
-                    audioElement.volume = 0;
-                    if (volumeSlider) {
-                        volumeSlider.value = 0;
-                        volumeSlider.style.background = `linear-gradient(to right, var(--spotify-green) 0%, rgba(255, 255, 255, 0.2) 0%)`;
-                    }
-                    volumeIcon.className = "fa-solid fa-volume-xmark";
-                } else {
-                    audioElement.volume = lastVolume;
-                    if (volumeSlider) {
-                        volumeSlider.value = lastVolume;
-                        volumeSlider.style.background = `linear-gradient(to right, var(--spotify-green) ${lastVolume * 100}%, rgba(255, 255, 255, 0.2) ${lastVolume * 100}%)`;
-                    }
-                    volumeIcon.className = lastVolume > 0.5 ? "fa-solid fa-volume-high" : "fa-solid fa-volume-low";
-                }
-            });
-        }
-
-        document.addEventListener('keydown', (e) => {
-            if (e.target.tagName === 'INPUT') return;
-            if (e.code === 'Space') { e.preventDefault(); masterPlay && masterPlay.click(); }
-            else if (e.code === 'ArrowRight') { nextSong(); }
-            else if (e.code === 'ArrowLeft') { prevSong(); }
-        });
-
-        // --- INITIALIZATION ---
-        populateSongList();
-        fetchAndDisplayDurations();
-        
-        // --- DEEP LINK AUTO-PLAY LOGIC ---
-        const urlParams = new URLSearchParams(window.location.search);
-        const songParam = urlParams.get('song');
-        if(songParam !== null && !isNaN(songParam) && songs[songParam]) {
-            // If URL has ?song=X, play it
-            loadSong(parseInt(songParam), true);
-        } else {
-            // Default load (no autoplay)
-            loadSong(0, false); 
-        }
-
-        // --- Setup Media Session Action Handlers (LOCK SCREEN FIX) ---
-        if ('mediaSession' in navigator) {
-            navigator.mediaSession.setActionHandler('play', playSong);
-            navigator.mediaSession.setActionHandler('pause', pauseSong);
-            navigator.mediaSession.setActionHandler('previoustrack', prevSong);
-            navigator.mediaSession.setActionHandler('nexttrack', nextSong);
-            navigator.mediaSession.setActionHandler('seekto', (details) => {
-                if (details.fastSeek && 'fastSeek' in audioElement) {
-                    audioElement.fastSeek(details.seekTime);
-                    return;
-                }
-                audioElement.currentTime = details.seekTime;
-                updatePositionState();
-            });
-        }
-
-        // set initial volume from slider
-        if (volumeSlider) {
-            audioElement.volume = Number(volumeSlider.value);
-            const pct = (Number(volumeSlider.value) || 0) * 100;
-            volumeSlider.style.background = `linear-gradient(to right, var(--spotify-green) ${pct}%, rgba(255, 255, 255, 0.2) ${pct}%)`;
-        } else {
-            audioElement.volume = 1;
-        }
+        window.loadSong = loadSong; // Expose to global for onclick
     });
     </script>
-    <script src="https://sdk.snapkit.com/js/v1/create"></script>
+    
+    <script>
+      (function (d, s, id) {
+        var js, sjs = d.getElementsByTagName(s)[0];
+        if (d.getElementById(id)) return;
+        js = d.createElement(s); js.id = id;
+        js.src = 'https://sdk.snapkit.com/js/v1/create.js';
+        sjs.parentNode.insertBefore(js, sjs);
+      })(document, 'script', 'snapkit-creative-kit-sdk');
+    </script>
 </body>
 </html>
-
