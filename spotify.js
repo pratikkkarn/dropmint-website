@@ -5,28 +5,57 @@ document.addEventListener('DOMContentLoaded', () => {
     const style = document.createElement('style');
     style.innerHTML = `
         #toast-container {
-            position: fixed; bottom: 110px; left: 50%; transform: translateX(-50%);
-            z-index: 9999; display: flex; flex-direction: column; align-items: center; gap: 10px;
+            position: fixed;
+            bottom: 110px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
         }
         .toast {
-            background-color: rgba(18, 18, 18, 0.8); color: #fff; padding: 12px 24px;
-            border-radius: 25px; font-size: 0.9rem; border: 1px solid rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5); opacity: 0;
-            transform: translateY(20px); transition: opacity 0.4s ease, transform 0.4s ease;
+            background-color: rgba(18, 18, 18, 0.8);
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-size: 0.9rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.4s ease, transform 0.4s ease;
         }
-        .toast.show { opacity: 1; transform: translateY(0); }
+        .toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
         #repeat.active-icon, #popupRepeat.active-icon,
         #shuffle.active-icon, #popupShuffle.active-icon {
             color: var(--glow-color, #a855f7) !important;
-            text-shadow: 0 0 10px var(--glow-color, #a855f7); position: relative;
+            text-shadow: 0 0 10px var(--glow-color, #a855f7);
+            position: relative;
         }
         .repeat-one-indicator::after {
-            content: '1'; position: absolute; top: -5px; right: -6px;
-            background-color: var(--glow-color, #a855f7); color: white;
-            border-radius: 50%; width: 14px; height: 14px; font-size: 9px;
-            font-weight: bold; display: flex; align-items: center; justify-content: center;
-            line-height: 1; box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+            content: '1';
+            position: absolute;
+            top: -5px;
+            right: -6px;
+            background-color: var(--glow-color, #a855f7);
+            color: white;
+            border-radius: 50%;
+            width: 14px;
+            height: 14px;
+            font-size: 9px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.5);
         }
     `;
     document.head.appendChild(style);
@@ -38,7 +67,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- STATE & VARIABLES ---
     let songIndex = 0;
     let isShuffled = false;
-    let repeatMode = 0;
+    let repeatMode = 0; 
+    let lastVolume = 1;
     let audioElement = new Audio();
     let isSeeking = false;
 
@@ -59,6 +89,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const totalDurationSpan = document.getElementById('totalDuration');
     const songItemContainer = document.querySelector('.songItemContainer');
 
+    // --- POPUP ELEMENTS ---
     const miniPlayer = document.getElementById('miniPlayer');
     const mobilePopup = document.getElementById('mobilePopup');
     const closePopupBtn = document.getElementById('closePopupBtn');
@@ -79,6 +110,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const bannerSongName = document.getElementById('bannerSongName');
     const bannerArtistName = document.getElementById('bannerArtistName');
 
+    // --- SHARE ELEMENTS ---
     const openShareBtn = document.getElementById('openShareBtn');
     const closeShareBtn = document.getElementById('closeShareBtn');
     const shareOverlay = document.getElementById('shareOverlay');
@@ -125,7 +157,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     playbackRate: audioElement.playbackRate,
                     position: audioElement.currentTime
                 });
-            } catch (error) { console.error(error); }
+            } catch (error) { console.error("Position state error:", error); }
         }
     };
 
@@ -182,7 +214,8 @@ document.addEventListener('DOMContentLoaded', () => {
             document.body.classList.add('now-playing-active');
             updatePositionState();
             if(window.innerWidth <= 900) openMobilePopup();
-        }).catch(error => { updateUI(); });
+        }).catch(error => { console.error("Playback failed:", error); updateUI(); });
+        
         updateUI();
         if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'playing';
     };
@@ -242,47 +275,57 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // --- SHARE LOGIC (ULTIMATE FIX: TINY CANVAS) ---
+    // --- SHARE LOGIC: THUMBNAIL MODE (Fix for Cross Mark) ---
+    // This generates a tiny 300px image that fits through Snap Kit's strict limits.
     const drawShareImage = (song, callback) => {
         if(!shareCanvas) return;
         const ctx = shareCanvas.getContext('2d');
         const img = new Image();
+        
+        // Remove CrossOrigin to prevent local taint errors
+        // img.crossOrigin = "anonymous"; 
+        
         img.src = song.coverPath;
         
         img.onload = () => {
-            // FIX: Set Canvas to "Thumbnail" Size (324x576)
-            // This is 30% of the original size. It fits easily in Snapchat's memory limit.
-            const TARGET_WIDTH = 324;
-            const TARGET_HEIGHT = 576;
+            // FORCE SMALL SIZE: 300x533 (Approx 9:16 aspect ratio)
+            // This small size is crucial for mobile browser compatibility
+            const w = 300;
+            const h = 533;
             
-            shareCanvas.width = TARGET_WIDTH;
-            shareCanvas.height = TARGET_HEIGHT;
+            shareCanvas.width = w;
+            shareCanvas.height = h;
             
-            // Calculate scale (0.3)
-            const scale = TARGET_WIDTH / 1080;
+            // Calculate scale based on original design (1080p)
+            // 300 / 1080 = ~0.27
+            const scale = w / 1080;
             ctx.scale(scale, scale);
 
-            // Draw Everything (The code below draws at 1080p coordinates, but 'ctx.scale' shrinks it)
+            // 1. Draw Background
             const grd = ctx.createLinearGradient(0, 0, 0, 1920);
             grd.addColorStop(0, "#2b2b2b"); 
             grd.addColorStop(1, "#000000");
             ctx.fillStyle = grd;
             ctx.fillRect(0, 0, 1080, 1920);
 
+            // 2. Draw Blurry Background Image
             ctx.save();
             ctx.filter = 'blur(40px) brightness(0.6)';
             ctx.drawImage(img, -200, -200, 1480, 2320); 
             ctx.restore();
 
+            // 3. Draw Card Container
             const cardX = 140, cardY = 400, cardW = 800, cardH = 1100;
             ctx.fillStyle = "rgba(30, 30, 30, 0.9)";
             ctx.beginPath();
             ctx.roundRect(cardX, cardY, cardW, cardH, 40);
             ctx.fill();
 
+            // 4. Draw Album Art
             const artSize = 700;
             ctx.drawImage(img, cardX + 50, cardY + 50, artSize, artSize);
 
+            // 5. Draw Text
             ctx.fillStyle = "white";
             ctx.font = "bold 60px Ubuntu";
             ctx.fillText(song.songName, cardX + 50, cardY + artSize + 120);
@@ -291,17 +334,23 @@ document.addEventListener('DOMContentLoaded', () => {
             ctx.font = "40px Varela Round";
             ctx.fillText(song.artistName, cardX + 50, cardY + artSize + 200);
 
+            // 6. Draw Logo
             ctx.fillStyle = "#1DB954";
             ctx.font = "bold 30px Ubuntu";
             ctx.fillText("Mint Music", cardX + 50, cardY + cardH - 50);
 
-            // FIX: Export as Low Quality JPEG (0.5) to keep file size tiny (~15KB)
-            // This guarantees no "Cross Mark" error.
-            const dataUrl = shareCanvas.toDataURL('image/jpeg', 0.5);
-            callback(dataUrl);
+            // COMPRESSION: JPEG at 0.5 Quality
+            // Tiny dimensions + JPEG compression = Success
+            try {
+                const dataUrl = shareCanvas.toDataURL('image/jpeg', 0.5);
+                callback(dataUrl);
+            } catch(e) {
+                console.error("Canvas export failed:", e);
+                showToast("Error creating snap.");
+            }
         };
         
-        img.onerror = () => { showToast("Error loading art."); };
+        img.onerror = () => { showToast("Error loading cover art."); };
     };
 
     const handleShare = (platform) => {
@@ -311,6 +360,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (platform === 'snapchat') {
             showToast("Opening Snapchat...");
             drawShareImage(currentSong, (dataUrl) => {
+                // Official Snap Kit Share
                 if (window.snap && window.snap.creativekit) {
                     snap.creativekit.share({
                       shareData: {
