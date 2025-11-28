@@ -195,10 +195,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // 5. UPDATE OFFICIAL SNAP BUTTON LINK DYNAMICALLY
         const snapButton = document.querySelector('.snapchat-creative-kit-share');
         if(snapButton) {
-            // Update the data attribute so if SDK re-reads it, it's correct
             snapButton.dataset.shareUrl = `https://dropmint.online?song=${index}`;
-            // If the SDK has already rendered an iframe/button, we might need to manually
-            // handle this via the Custom Button, which is reliable.
         }
 
         audioElement.currentTime = 0;
@@ -313,13 +310,14 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // --- SHARE & CANVAS LOGIC (SNAPCHAT CREATIVE KIT) ---
+    // --- SHARE & CANVAS LOGIC (FIXED FOR SNAPCHAT) ---
     
     // 1. Generate the Image (Song Card)
     const drawShareImage = (song, callback) => {
         if(!shareCanvas) return;
         const ctx = shareCanvas.getContext('2d');
         const img = new Image();
+        img.crossOrigin = "anonymous"; // Important for canvas export
         img.src = song.coverPath;
         
         img.onload = () => {
@@ -361,13 +359,14 @@ document.addEventListener('DOMContentLoaded', () => {
             ctx.font = "bold 30px Ubuntu";
             ctx.fillText("Mint Music", cardX + 50, cardY + cardH - 50);
 
-            // Return Data URL (Base64) - Required for Snap Kit Web
-            const dataUrl = shareCanvas.toDataURL('image/png');
-            callback(dataUrl);
+            // Return BLOB (File) instead of DataURL to fix size issues
+            shareCanvas.toBlob((blob) => {
+                callback(blob);
+            }, 'image/png', 0.9);
         };
     };
 
-    // 2. Handle Share Buttons
+    // 2. Handle Share Buttons (FIXED)
     const handleShare = (platform) => {
         const currentSong = songs[songIndex];
         const deepLink = `https://dropmint.online?song=${songIndex}`;
@@ -376,26 +375,27 @@ document.addEventListener('DOMContentLoaded', () => {
             showToast("Opening Snapchat...");
             
             // Generate the Song Card
-            drawShareImage(currentSong, (dataUrl) => {
-                // Trigger Snap Kit Programmatically
-                if (window.snap && window.snap.creativekit) {
-                    snap.creativekit.share({
-                      shareData: {
-                        sticker: {
-                          src: dataUrl,
-                          metadata: {
-                            type: "SNAP_IMAGE",
-                            position: "center",
-                            scale: 1
-                          }
-                        },
-                        // Ensure we share the SONG LINK, not the Kit URL
-                        attachmentUrl: deepLink 
-                      }
+            drawShareImage(currentSong, (blob) => {
+                // Use Native Web Share API instead of Snap Kit SDK JS Bridge
+                if (navigator.share && blob) {
+                    const file = new File([blob], 'mint_music_share.png', { type: "image/png" });
+                    
+                    navigator.share({
+                        files: [file],
+                        url: deepLink // Attempts to attach URL if OS supports it
+                    })
+                    .then(() => {
+                        if(shareOverlay) shareOverlay.classList.remove('active');
+                    })
+                    .catch((error) => {
+                        console.log("Share failed or cancelled", error);
+                        // Fallback if user cancels or fails
+                        if(shareOverlay) shareOverlay.classList.remove('active');
                     });
-                    if(shareOverlay) shareOverlay.classList.remove('active');
                 } else {
-                    showToast("Snapchat SDK loading...");
+                    // Fallback for browsers that don't support file sharing
+                    showToast("Redirecting to Snapchat...");
+                    window.location.href = "snapchat://creative-kit";
                 }
             });
         } 
