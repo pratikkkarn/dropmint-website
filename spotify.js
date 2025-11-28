@@ -123,6 +123,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const shareCopy = document.getElementById('shareCopy');
     const shareCanvas = document.getElementById('shareCanvas');
 
+    // --- CRITICAL FIX: MOBILE CANVAS VISIBILITY ---
+    // Mobile browsers (Safari/Chrome) REFUSE to draw on "display: none" elements.
+    // We must make it block, but push it off-screen so the user doesn't see it.
+    if (shareCanvas) {
+        shareCanvas.style.display = 'block';
+        shareCanvas.style.position = 'fixed';
+        shareCanvas.style.left = '-9999px';
+        shareCanvas.style.top = '-9999px';
+        shareCanvas.style.visibility = 'hidden'; // 'hidden' usually works, unlike 'display: none'
+    }
+
     // --- SONG DATA ---
     const songs = [
       { songName: "Bewafa", artistName: "Pratik karn", filePath: "song/1.mp3", coverPath: "covers/1.jpg" },
@@ -275,57 +286,60 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // --- SHARE LOGIC: THUMBNAIL MODE (Fix for Cross Mark) ---
-    // This generates a tiny 300px image that fits through Snap Kit's strict limits.
+    // --- SHARE LOGIC: MOBILE CANVAS FIX ---
     const drawShareImage = (song, callback) => {
         if(!shareCanvas) return;
+        
+        // Ensure canvas is visible (off-screen) before drawing
+        // This redundancy ensures even dynamic updates don't hide it
+        shareCanvas.style.display = 'block'; 
+        
         const ctx = shareCanvas.getContext('2d');
         const img = new Image();
         
-        // Remove CrossOrigin to prevent local taint errors
+        // IMPORTANT: For local files (file://) or relative paths on same domain, 
+        // crossOrigin is NOT needed and can cause errors.
         // img.crossOrigin = "anonymous"; 
         
         img.src = song.coverPath;
         
         img.onload = () => {
-            // FORCE SMALL SIZE: 300x533 (Approx 9:16 aspect ratio)
-            // This small size is crucial for mobile browser compatibility
+            // FORCE SMALL SIZE: 300x533 (Mobile Safe)
             const w = 300;
             const h = 533;
             
             shareCanvas.width = w;
             shareCanvas.height = h;
             
-            // Calculate scale based on original design (1080p)
-            // 300 / 1080 = ~0.27
+            // Draw
             const scale = w / 1080;
             ctx.scale(scale, scale);
 
-            // 1. Draw Background
+            // 1. Background
             const grd = ctx.createLinearGradient(0, 0, 0, 1920);
             grd.addColorStop(0, "#2b2b2b"); 
             grd.addColorStop(1, "#000000");
             ctx.fillStyle = grd;
             ctx.fillRect(0, 0, 1080, 1920);
 
-            // 2. Draw Blurry Background Image
+            // 2. Blurry Background
             ctx.save();
             ctx.filter = 'blur(40px) brightness(0.6)';
             ctx.drawImage(img, -200, -200, 1480, 2320); 
             ctx.restore();
 
-            // 3. Draw Card Container
+            // 3. Card Container
             const cardX = 140, cardY = 400, cardW = 800, cardH = 1100;
             ctx.fillStyle = "rgba(30, 30, 30, 0.9)";
             ctx.beginPath();
             ctx.roundRect(cardX, cardY, cardW, cardH, 40);
             ctx.fill();
 
-            // 4. Draw Album Art
+            // 4. Album Art
             const artSize = 700;
             ctx.drawImage(img, cardX + 50, cardY + 50, artSize, artSize);
 
-            // 5. Draw Text
+            // 5. Text
             ctx.fillStyle = "white";
             ctx.font = "bold 60px Ubuntu";
             ctx.fillText(song.songName, cardX + 50, cardY + artSize + 120);
@@ -334,20 +348,21 @@ document.addEventListener('DOMContentLoaded', () => {
             ctx.font = "40px Varela Round";
             ctx.fillText(song.artistName, cardX + 50, cardY + artSize + 200);
 
-            // 6. Draw Logo
+            // 6. Logo
             ctx.fillStyle = "#1DB954";
             ctx.font = "bold 30px Ubuntu";
             ctx.fillText("Mint Music", cardX + 50, cardY + cardH - 50);
 
-            // COMPRESSION: JPEG at 0.5 Quality
-            // Tiny dimensions + JPEG compression = Success
-            try {
-                const dataUrl = shareCanvas.toDataURL('image/jpeg', 0.5);
-                callback(dataUrl);
-            } catch(e) {
-                console.error("Canvas export failed:", e);
-                showToast("Error creating snap.");
-            }
+            // EXPORT: Tiny delay to ensure rendering buffer is ready
+            setTimeout(() => {
+                try {
+                    const dataUrl = shareCanvas.toDataURL('image/jpeg', 0.5);
+                    callback(dataUrl);
+                } catch(e) {
+                    console.error("Canvas export failed:", e);
+                    showToast("Error creating snap sticker.");
+                }
+            }, 50);
         };
         
         img.onerror = () => { showToast("Error loading cover art."); };
@@ -360,7 +375,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (platform === 'snapchat') {
             showToast("Opening Snapchat...");
             drawShareImage(currentSong, (dataUrl) => {
-                // Official Snap Kit Share
                 if (window.snap && window.snap.creativekit) {
                     snap.creativekit.share({
                       shareData: {
