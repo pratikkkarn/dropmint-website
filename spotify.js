@@ -310,14 +310,17 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // --- SHARE & CANVAS LOGIC (FIXED FOR SNAPCHAT) ---
+    // --- SHARE & CANVAS LOGIC (FIXED FOR SNAP KIT URL ATTACHMENT) ---
     
-    // 1. Generate the Image (Song Card)
+    // 1. Generate the Image (Song Card) - LIGHTWEIGHT VERSION
     const drawShareImage = (song, callback) => {
         if(!shareCanvas) return;
         const ctx = shareCanvas.getContext('2d');
         const img = new Image();
-        img.crossOrigin = "anonymous"; // Important for canvas export
+        
+        // REMOVED: img.crossOrigin = "anonymous"; 
+        // This prevents 'Tainted Canvas' errors on localhost.
+        
         img.src = song.coverPath;
         
         img.onload = () => {
@@ -359,14 +362,19 @@ document.addEventListener('DOMContentLoaded', () => {
             ctx.font = "bold 30px Ubuntu";
             ctx.fillText("Mint Music", cardX + 50, cardY + cardH - 50);
 
-            // Return BLOB (File) instead of DataURL to fix size issues
-            shareCanvas.toBlob((blob) => {
-                callback(blob);
-            }, 'image/png', 0.9);
+            // FIX: Convert to JPEG with 0.6 Quality (Compression)
+            // This reduces the Base64 string size significantly so it passes through Snap Kit.
+            const dataUrl = shareCanvas.toDataURL('image/jpeg', 0.6);
+            callback(dataUrl);
+        };
+        
+        img.onerror = (err) => {
+            console.error("Image failed to load", err);
+            showToast("Error generating share card");
         };
     };
 
-    // 2. Handle Share Buttons (FIXED)
+    // 2. Handle Share Buttons
     const handleShare = (platform) => {
         const currentSong = songs[songIndex];
         const deepLink = `https://dropmint.online?song=${songIndex}`;
@@ -374,28 +382,27 @@ document.addEventListener('DOMContentLoaded', () => {
         if (platform === 'snapchat') {
             showToast("Opening Snapchat...");
             
-            // Generate the Song Card
-            drawShareImage(currentSong, (blob) => {
-                // Use Native Web Share API instead of Snap Kit SDK JS Bridge
-                if (navigator.share && blob) {
-                    const file = new File([blob], 'mint_music_share.png', { type: "image/png" });
-                    
-                    navigator.share({
-                        files: [file],
-                        url: deepLink // Attempts to attach URL if OS supports it
-                    })
-                    .then(() => {
-                        if(shareOverlay) shareOverlay.classList.remove('active');
-                    })
-                    .catch((error) => {
-                        console.log("Share failed or cancelled", error);
-                        // Fallback if user cancels or fails
-                        if(shareOverlay) shareOverlay.classList.remove('active');
+            // Generate the Compressed Image
+            drawShareImage(currentSong, (dataUrl) => {
+                
+                // USE SNAP CREATIVE KIT (Attach URL + Sticker)
+                if (window.snap && window.snap.creativekit) {
+                    snap.creativekit.share({
+                      shareData: {
+                        sticker: {
+                          src: dataUrl, // Now a lightweight JPEG string
+                          metadata: {
+                            type: "SNAP_IMAGE",
+                            position: "center",
+                            scale: 1
+                          }
+                        },
+                        attachmentUrl: deepLink // The Link you want to attach
+                      }
                     });
+                    if(shareOverlay) shareOverlay.classList.remove('active');
                 } else {
-                    // Fallback for browsers that don't support file sharing
-                    showToast("Redirecting to Snapchat...");
-                    window.location.href = "snapchat://creative-kit";
+                    showToast("Snapchat SDK not loaded.");
                 }
             });
         } 
