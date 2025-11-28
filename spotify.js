@@ -5,59 +5,28 @@ document.addEventListener('DOMContentLoaded', () => {
     const style = document.createElement('style');
     style.innerHTML = `
         #toast-container {
-            position: fixed;
-            bottom: 110px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 9999;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 10px;
+            position: fixed; bottom: 110px; left: 50%; transform: translateX(-50%);
+            z-index: 9999; display: flex; flex-direction: column; align-items: center; gap: 10px;
         }
         .toast {
-            background-color: rgba(18, 18, 18, 0.8);
-            color: #fff;
-            padding: 12px 24px;
-            border-radius: 25px;
-            font-size: 0.9rem;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
-            opacity: 0;
-            transform: translateY(20px);
-            transition: opacity 0.4s ease, transform 0.4s ease;
+            background-color: rgba(18, 18, 18, 0.8); color: #fff; padding: 12px 24px;
+            border-radius: 25px; font-size: 0.9rem; border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5); opacity: 0;
+            transform: translateY(20px); transition: opacity 0.4s ease, transform 0.4s ease;
         }
-        .toast.show {
-            opacity: 1;
-            transform: translateY(0);
-        }
-        /* Active State for Repeat/Shuffle */
+        .toast.show { opacity: 1; transform: translateY(0); }
         #repeat.active-icon, #popupRepeat.active-icon,
         #shuffle.active-icon, #popupShuffle.active-icon {
             color: var(--glow-color, #a855f7) !important;
-            text-shadow: 0 0 10px var(--glow-color, #a855f7);
-            position: relative;
+            text-shadow: 0 0 10px var(--glow-color, #a855f7); position: relative;
         }
-        /* Repeat One Indicator */
         .repeat-one-indicator::after {
-            content: '1';
-            position: absolute;
-            top: -5px;
-            right: -6px;
-            background-color: var(--glow-color, #a855f7);
-            color: white;
-            border-radius: 50%;
-            width: 14px;
-            height: 14px;
-            font-size: 9px;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            line-height: 1;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+            content: '1'; position: absolute; top: -5px; right: -6px;
+            background-color: var(--glow-color, #a855f7); color: white;
+            border-radius: 50%; width: 14px; height: 14px; font-size: 9px;
+            font-weight: bold; display: flex; align-items: center; justify-content: center;
+            line-height: 1; box-shadow: 0 2px 5px rgba(0,0,0,0.5);
         }
     `;
     document.head.appendChild(style);
@@ -69,12 +38,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- STATE & VARIABLES ---
     let songIndex = 0;
     let isShuffled = false;
-    let repeatMode = 0; // 0: off, 1: playlist, 2: one
-    let lastVolume = 1;
+    let repeatMode = 0;
     let audioElement = new Audio();
     let isSeeking = false;
 
-    // --- DOM ELEMENTS (MAIN PLAYER) ---
+    // --- DOM ELEMENTS ---
     const masterPlay = document.getElementById('masterPlay');
     const myProgressBar = document.getElementById('myProgressBar');
     const nextBtn = document.getElementById('next');
@@ -91,7 +59,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const totalDurationSpan = document.getElementById('totalDuration');
     const songItemContainer = document.querySelector('.songItemContainer');
 
-    // --- DOM ELEMENTS (MOBILE POPUP & BANNER) ---
     const miniPlayer = document.getElementById('miniPlayer');
     const mobilePopup = document.getElementById('mobilePopup');
     const closePopupBtn = document.getElementById('closePopupBtn');
@@ -112,7 +79,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const bannerSongName = document.getElementById('bannerSongName');
     const bannerArtistName = document.getElementById('bannerArtistName');
 
-    // --- DOM ELEMENTS (SHARE FEATURE) ---
     const openShareBtn = document.getElementById('openShareBtn');
     const closeShareBtn = document.getElementById('closeShareBtn');
     const shareOverlay = document.getElementById('shareOverlay');
@@ -137,7 +103,7 @@ document.addEventListener('DOMContentLoaded', () => {
       { songName: "Bhula Dena", artistName: "Mustafa Zahid", filePath: "song/8.mp3", coverPath: "covers/8.jpg" },
     ];
 
-    // --- MEDIA SESSION API (Lock Screen) ---
+    // --- MEDIA SESSION ---
     const updateMediaSession = () => {
         if ('mediaSession' in navigator) {
             const song = songs[songIndex];
@@ -145,9 +111,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 title: song.songName,
                 artist: song.artistName,
                 album: 'Mint Music Player',
-                artwork: [
-                    { src: new URL(song.coverPath, document.baseURI).href, sizes: '512x512', type: 'image/jpeg' }
-                ]
+                artwork: [{ src: new URL(song.coverPath, document.baseURI).href, sizes: '512x512', type: 'image/jpeg' }]
             });
             updatePositionState();
         }
@@ -161,46 +125,34 @@ document.addEventListener('DOMContentLoaded', () => {
                     playbackRate: audioElement.playbackRate,
                     position: audioElement.currentTime
                 });
-            } catch (error) { console.error("Position state error:", error); }
+            } catch (error) { console.error(error); }
         }
     };
 
-    // --- PLAYER FUNCTIONS ---
+    // --- LOAD & PLAY ---
     const loadSong = (index, autoPlay = true) => {
         songIndex = index;
         const song = songs[songIndex];
         audioElement.src = song.filePath;
 
-        // 1. Update Main Player
         if(masterSongName) masterSongName.innerText = song.songName;
         if(masterArtistName) masterArtistName.innerText = song.artistName;
         if(currentCoverArt) currentCoverArt.src = song.coverPath;
-
-        // 2. Update Banner & Background
         if(bannerSongName) bannerSongName.innerText = song.songName;
         if(bannerArtistName) bannerArtistName.innerText = song.artistName;
         if(bannerCoverArt) bannerCoverArt.src = song.coverPath;
         if(dynamicBackground) dynamicBackground.style.backgroundImage = `url(${song.coverPath})`;
-
-        // 3. Update Mobile Popup
         if(popupSongName) popupSongName.innerText = song.songName;
         if(popupArtistName) popupArtistName.innerText = song.artistName;
         if(popupCoverArt) popupCoverArt.src = song.coverPath;
-
-        // 4. Update Share Sheet
         if(shareSong) shareSong.innerText = song.songName;
         if(shareArtist) shareArtist.innerText = song.artistName;
         if(shareArt) shareArt.src = song.coverPath;
 
-        // 5. UPDATE OFFICIAL SNAP BUTTON LINK DYNAMICALLY
         const snapButton = document.querySelector('.snapchat-creative-kit-share');
-        if(snapButton) {
-            snapButton.dataset.shareUrl = `https://dropmint.online?song=${index}`;
-        }
+        if(snapButton) snapButton.dataset.shareUrl = `https://dropmint.online?song=${index}`;
 
         audioElement.currentTime = 0;
-        
-        // Reset Progress Bars
         [myProgressBar, popupProgressBar].forEach(bar => {
             if(bar) {
                 bar.max = 100;
@@ -229,10 +181,8 @@ document.addEventListener('DOMContentLoaded', () => {
         audioElement.play().then(() => {
             document.body.classList.add('now-playing-active');
             updatePositionState();
-            // Auto-open Popup on Mobile
             if(window.innerWidth <= 900) openMobilePopup();
-        }).catch(error => { console.error("Playback failed:", error); updateUI(); });
-        
+        }).catch(error => { updateUI(); });
         updateUI();
         if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'playing';
     };
@@ -263,31 +213,14 @@ document.addEventListener('DOMContentLoaded', () => {
         loadSong(songIndex);
     };
 
-    // --- UI UPDATES ---
     const updateUI = () => {
         const isPlaying = !audioElement.paused && !audioElement.ended;
-        
-        // Update Main Button
-        if (masterPlay) {
-            masterPlay.className = isPlaying ? 'fa-regular fa-circle-pause' : 'fa-regular fa-circle-play';
-        }
-        // Update Popup Button
-        if (popupPlay) {
-            popupPlay.className = isPlaying ? 'fa-solid fa-circle-pause main-play-btn' : 'fa-solid fa-circle-play main-play-btn';
-        }
-
-        // Update List Icons
+        if (masterPlay) masterPlay.className = isPlaying ? 'fa-regular fa-circle-pause' : 'fa-regular fa-circle-play';
+        if (popupPlay) popupPlay.className = isPlaying ? 'fa-solid fa-circle-pause main-play-btn' : 'fa-solid fa-circle-play main-play-btn';
         document.querySelectorAll('.songItemPlay').forEach((icon, index) => {
-            const isCurrentSong = (index === songIndex);
-            icon.className = (isCurrentSong && isPlaying) ? 'fa-regular fa-circle-pause songItemPlay' : 'fa-regular fa-circle-play songItemPlay';
+            icon.className = (index === songIndex && isPlaying) ? 'fa-regular fa-circle-pause songItemPlay' : 'fa-regular fa-circle-play songItemPlay';
         });
-
-        // Sync Shuffle Styles
-        [shuffleBtn, popupShuffle].forEach(btn => {
-            if(btn) btn.classList.toggle('active-icon', isShuffled);
-        });
-
-        // Sync Repeat Styles
+        [shuffleBtn, popupShuffle].forEach(btn => { if(btn) btn.classList.toggle('active-icon', isShuffled); });
         [repeatBtn, popupRepeat].forEach(btn => {
             if(btn) {
                 btn.classList.toggle('active-icon', repeatMode !== 0);
@@ -296,7 +229,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     };
 
-    // --- MOBILE POPUP LOGIC ---
     const openMobilePopup = () => {
         if(mobilePopup && window.innerWidth <= 900) {
             mobilePopup.classList.add('active');
@@ -310,45 +242,47 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // --- SHARE & CANVAS LOGIC (FIXED FOR SNAP KIT URL ATTACHMENT) ---
-    
-    // 1. Generate the Image (Song Card) - LIGHTWEIGHT VERSION
+    // --- SHARE LOGIC (ULTIMATE FIX: TINY CANVAS) ---
     const drawShareImage = (song, callback) => {
         if(!shareCanvas) return;
         const ctx = shareCanvas.getContext('2d');
         const img = new Image();
-        
-        // REMOVED: img.crossOrigin = "anonymous"; 
-        // This prevents 'Tainted Canvas' errors on localhost.
-        
         img.src = song.coverPath;
         
         img.onload = () => {
-            // Draw Background (Gradient)
+            // FIX: Set Canvas to "Thumbnail" Size (324x576)
+            // This is 30% of the original size. It fits easily in Snapchat's memory limit.
+            const TARGET_WIDTH = 324;
+            const TARGET_HEIGHT = 576;
+            
+            shareCanvas.width = TARGET_WIDTH;
+            shareCanvas.height = TARGET_HEIGHT;
+            
+            // Calculate scale (0.3)
+            const scale = TARGET_WIDTH / 1080;
+            ctx.scale(scale, scale);
+
+            // Draw Everything (The code below draws at 1080p coordinates, but 'ctx.scale' shrinks it)
             const grd = ctx.createLinearGradient(0, 0, 0, 1920);
             grd.addColorStop(0, "#2b2b2b"); 
             grd.addColorStop(1, "#000000");
             ctx.fillStyle = grd;
             ctx.fillRect(0, 0, 1080, 1920);
 
-            // Draw Blurry Background Image
             ctx.save();
             ctx.filter = 'blur(40px) brightness(0.6)';
             ctx.drawImage(img, -200, -200, 1480, 2320); 
             ctx.restore();
 
-            // Draw Card Container
             const cardX = 140, cardY = 400, cardW = 800, cardH = 1100;
             ctx.fillStyle = "rgba(30, 30, 30, 0.9)";
             ctx.beginPath();
             ctx.roundRect(cardX, cardY, cardW, cardH, 40);
             ctx.fill();
 
-            // Draw Album Art
             const artSize = 700;
             ctx.drawImage(img, cardX + 50, cardY + 50, artSize, artSize);
 
-            // Draw Text
             ctx.fillStyle = "white";
             ctx.font = "bold 60px Ubuntu";
             ctx.fillText(song.songName, cardX + 50, cardY + artSize + 120);
@@ -357,52 +291,39 @@ document.addEventListener('DOMContentLoaded', () => {
             ctx.font = "40px Varela Round";
             ctx.fillText(song.artistName, cardX + 50, cardY + artSize + 200);
 
-            // Draw Logo
             ctx.fillStyle = "#1DB954";
             ctx.font = "bold 30px Ubuntu";
             ctx.fillText("Mint Music", cardX + 50, cardY + cardH - 50);
 
-            // FIX: Convert to JPEG with 0.6 Quality (Compression)
-            // This reduces the Base64 string size significantly so it passes through Snap Kit.
-            const dataUrl = shareCanvas.toDataURL('image/jpeg', 0.6);
+            // FIX: Export as Low Quality JPEG (0.5) to keep file size tiny (~15KB)
+            // This guarantees no "Cross Mark" error.
+            const dataUrl = shareCanvas.toDataURL('image/jpeg', 0.5);
             callback(dataUrl);
         };
         
-        img.onerror = (err) => {
-            console.error("Image failed to load", err);
-            showToast("Error generating share card");
-        };
+        img.onerror = () => { showToast("Error loading art."); };
     };
 
-    // 2. Handle Share Buttons
     const handleShare = (platform) => {
         const currentSong = songs[songIndex];
         const deepLink = `https://dropmint.online?song=${songIndex}`;
         
         if (platform === 'snapchat') {
             showToast("Opening Snapchat...");
-            
-            // Generate the Compressed Image
             drawShareImage(currentSong, (dataUrl) => {
-                
-                // USE SNAP CREATIVE KIT (Attach URL + Sticker)
                 if (window.snap && window.snap.creativekit) {
                     snap.creativekit.share({
                       shareData: {
                         sticker: {
-                          src: dataUrl, // Now a lightweight JPEG string
-                          metadata: {
-                            type: "SNAP_IMAGE",
-                            position: "center",
-                            scale: 1
-                          }
+                          src: dataUrl,
+                          metadata: { type: "SNAP_IMAGE", position: "center", scale: 1 }
                         },
-                        attachmentUrl: deepLink // The Link you want to attach
+                        attachmentUrl: deepLink
                       }
                     });
                     if(shareOverlay) shareOverlay.classList.remove('active');
                 } else {
-                    showToast("Snapchat SDK not loaded.");
+                    showToast("Snapchat SDK not ready.");
                 }
             });
         } 
@@ -420,20 +341,14 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-
     // --- EVENT LISTENERS ---
-    
-    // Playback
     masterPlay && masterPlay.addEventListener('click', togglePlay);
     popupPlay && popupPlay.addEventListener('click', togglePlay);
-    
-    // Navigation
     nextBtn && nextBtn.addEventListener('click', nextSong);
     popupNext && popupNext.addEventListener('click', nextSong);
     prevBtn && prevBtn.addEventListener('click', prevSong);
     popupPrev && popupPrev.addEventListener('click', prevSong);
 
-    // Shuffle & Repeat
     const toggleShuffle = () => {
         isShuffled = !isShuffled;
         showToast(isShuffled ? "Shuffle On" : "Shuffle Off");
@@ -451,7 +366,6 @@ document.addEventListener('DOMContentLoaded', () => {
     repeatBtn && repeatBtn.addEventListener('click', toggleRepeat);
     popupRepeat && popupRepeat.addEventListener('click', toggleRepeat);
 
-    // Mobile Popup
     if(closePopupBtn) closePopupBtn.addEventListener('click', closeMobilePopup);
     if(miniPlayer) {
         miniPlayer.addEventListener('click', (e) => {
@@ -459,7 +373,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Share Menu
     if(openShareBtn) openShareBtn.addEventListener('click', () => shareOverlay.classList.add('active'));
     if(closeShareBtn) closeShareBtn.addEventListener('click', () => shareOverlay.classList.remove('active'));
     if(shareOverlay) {
@@ -468,17 +381,14 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Bind Share Buttons
     if(shareSnap) shareSnap.addEventListener('click', () => handleShare('snapchat'));
     if(shareWhatsapp) shareWhatsapp.addEventListener('click', () => handleShare('whatsapp'));
     if(shareCopy) shareCopy.addEventListener('click', () => handleShare('copy'));
     if(shareInsta) shareInsta.addEventListener('click', () => handleShare('instagram'));
 
-    // --- AUDIO TIME UPDATES (SYNC BOTH BARS) ---
     const handleSeekStart = () => { isSeeking = true; };
     const handleSeekEnd = () => { isSeeking = false; };
 
-    // Bind seeking to both bars
     [myProgressBar, popupProgressBar].forEach(bar => {
         if(bar) {
             bar.addEventListener('pointerdown', handleSeekStart);
@@ -487,13 +397,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (!audioElement.duration) return;
                 const val = Number(e.target.value);
                 audioElement.currentTime = (val / 100) * audioElement.duration;
-                // Update visuals immediately
                 const percent = val;
                 const color = `linear-gradient(to right, var(--spotify-green) ${percent}%, rgba(255, 255, 255, 0.2) ${percent}%)`;
-                
                 if(myProgressBar) { myProgressBar.value = val; myProgressBar.style.background = color; }
                 if(popupProgressBar) { popupProgressBar.value = val; popupProgressBar.style.background = color; }
-                
                 if(currentTimeSpan) currentTimeSpan.innerText = formatTime(audioElement.currentTime);
                 if(popupCurrentTime) popupCurrentTime.innerText = formatTime(audioElement.currentTime);
             });
@@ -503,23 +410,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     audioElement.addEventListener('timeupdate', () => {
         if (!audioElement.duration) return;
-
         const curTime = formatTime(audioElement.currentTime);
         if(currentTimeSpan) currentTimeSpan.innerText = curTime;
         if(popupCurrentTime) popupCurrentTime.innerText = curTime;
-
         if (!isSeeking) {
             const progressValue = (audioElement.currentTime / audioElement.duration) * 100;
             const color = `linear-gradient(to right, var(--spotify-green) ${progressValue}%, rgba(255, 255, 255, 0.2) ${progressValue}%)`;
-
-            if(myProgressBar) {
-                myProgressBar.value = progressValue;
-                myProgressBar.style.background = color;
-            }
-            if(popupProgressBar) {
-                popupProgressBar.value = progressValue;
-                popupProgressBar.style.background = color;
-            }
+            if(myProgressBar) { myProgressBar.value = progressValue; myProgressBar.style.background = color; }
+            if(popupProgressBar) { popupProgressBar.value = progressValue; popupProgressBar.style.background = color; }
         }
     });
 
@@ -530,7 +428,6 @@ document.addEventListener('DOMContentLoaded', () => {
         else pauseSong();
     });
 
-    // Song List Click
     songItemContainer && songItemContainer.addEventListener('click', (e) => {
         const targetItem = e.target.closest('.songItem');
         if (targetItem) {
@@ -540,13 +437,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Volume
     if (volumeSlider) {
         volumeSlider.addEventListener('input', (e) => {
             audioElement.volume = Number(e.target.value);
             const pct = audioElement.volume * 100;
             volumeSlider.style.background = `linear-gradient(to right, var(--spotify-green) ${pct}%, rgba(255, 255, 255, 0.2) ${pct}%)`;
-            
             if (volumeIcon) {
                 if (audioElement.volume > 0.5) volumeIcon.className = "fa-solid fa-volume-high";
                 else if (audioElement.volume > 0) volumeIcon.className = "fa-solid fa-volume-low";
@@ -555,7 +450,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Keyboard
     document.addEventListener('keydown', (e) => {
         if (e.target.tagName === 'INPUT') return;
         if (e.code === 'Space') { e.preventDefault(); togglePlay(); }
@@ -563,7 +457,6 @@ document.addEventListener('DOMContentLoaded', () => {
         else if (e.code === 'ArrowLeft') prevSong();
     });
 
-    // --- INITIALIZATION ---
     const populateSongList = () => {
         if (!songItemContainer) return;
         songItemContainer.innerHTML = '';
@@ -611,7 +504,6 @@ document.addEventListener('DOMContentLoaded', () => {
     populateSongList();
     fetchDurations();
 
-    // Check URL for ?song=X
     const urlParams = new URLSearchParams(window.location.search);
     const songParam = urlParams.get('song');
     if(songParam !== null && !isNaN(songParam) && songs[songParam]) {
@@ -620,7 +512,6 @@ document.addEventListener('DOMContentLoaded', () => {
         loadSong(0, false);
     }
 
-    // Media Session Actions
     if ('mediaSession' in navigator) {
         navigator.mediaSession.setActionHandler('play', playSong);
         navigator.mediaSession.setActionHandler('pause', pauseSong);
